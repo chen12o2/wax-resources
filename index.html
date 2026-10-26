@@ -125,7 +125,11 @@ pre.tpl{white-space:pre-wrap;font-family:var(--body);font-size:14px;background:v
 .chkcount{font-size:15px;color:var(--ink);padding-top:2px}
 .chkcount b{font-size:18px;color:var(--coffee)}
 .chkg{display:flex;align-items:center;gap:6px}
-.dlrow{display:flex;flex-wrap:wrap;gap:8px}
+.dlrow{display:grid;gap:8px}
+.dlrow .dl{width:100%;justify-content:center;text-align:center;padding-block:10px}
+.dlrow .dlpdf{background:var(--coffee);color:var(--paper);border-color:var(--coffee)}
+.dlimgs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.dlimgs .dl:last-child:nth-child(odd){grid-column:1/-1}
 .blk .bsub{display:grid;gap:10px;padding-top:14px;border-top:1px solid var(--line)}
 .blk .bsub h3{font-size:18px;margin:0}
 .gdesc{margin:10px 0 0;padding-top:10px;border-top:1px solid var(--line);font-size:13px;line-height:1.75;color:var(--muted);white-space:pre-line}
@@ -501,7 +505,7 @@ const gsort=(gc,list)=>{const o=SITE.gord||{};return list.map((g,i)=>[g,i]).sort
 const GL=gc=>gc==="tools"?gsort("tools",[...new Set(D.tools.map(t=>t.g||"其他"))]):gc==="products"?gsort("products",[...new Set(D.products.map(x=>x.cat||""))].filter(Boolean)):[];
 const IMG_URL=id=>loadImg(id);
 const dlName=(f,t,i,n)=>{const base=(t||"檔案").replace(/[｜|]/g,"-").replace(/[\\/:*?"<>]/g,"").trim()+(n>1?"-"+String(i+1).padStart(2,"0"):"");return base+(isPdf(f)?".pdf":".jpg")};
-const dlRow=f=>{const fs=f.files||[],imgs=fs.filter(x=>!isPdf(x));return fs.length?`<div class="dlrow">${imgs.length?`<button class="btn dl" data-pdf="${esc(f.id)}">⬇ 下載 PDF</button>`:""}${fs.map((x,i)=>`<button class="btn dl" data-dl="${esc(x.id)}" data-name="${esc(dlName(x,f.t,i,fs.length))}">⬇ 下載${isPdf(x)?"PDF":"圖片"}${fs.length>1?" "+String(i+1).padStart(2,"0"):""}</button>`).join("")}</div>`:""};
+const dlRow=f=>{const fs=f.files||[],imgs=fs.filter(x=>!isPdf(x));return fs.length?`<div class="dlrow">${imgs.length?`<button class="btn dl dlpdf" data-pdf="${esc(f.id)}">⬇ 下載 PDF（全部頁面）</button>`:""}<div class="dlimgs">${fs.map((x,i)=>`<button class="btn dl" data-dl="${esc(x.id)}" data-name="${esc(dlName(x,f.t,i,fs.length))}">⬇ 下載${isPdf(x)?"PDF":"圖片"}${fs.length>1?" "+String(i+1).padStart(2,"0"):""}</button>`).join("")}</div></div>`:""};
 const imgEl=u=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=u});
 function buildPdf(pages){/* pages: [{bytes:Uint8Array(jpeg),w,h}] -> Blob */
   const enc=new TextEncoder(),parts=[],offs=[];let len=0;const put=x=>{const b=typeof x==="string"?enc.encode(x):x;parts.push(b);len+=b.length};
