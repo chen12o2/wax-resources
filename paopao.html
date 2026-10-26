@@ -118,8 +118,19 @@ pre.tpl{white-space:pre-wrap;font-family:var(--body);font-size:14px;background:v
 .check{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px dashed var(--line)}
 .check:last-child{border-bottom:0}
 .check input{margin-top:6px;accent-color:var(--coffee);width:16px;height:16px;flex:none}
-.check span{flex:1;min-width:0}
+.check>span{flex:1;min-width:0}
+.check>span.acts{flex:none}
 .check small{display:block;color:var(--muted)}
+.chkhead .cta{margin-top:4px}
+.chkcount{font-size:15px;color:var(--ink);padding-top:2px}
+.chkcount b{font-size:18px;color:var(--coffee)}
+.chkg{display:flex;align-items:center;gap:6px}
+.gno{font-weight:400}
+.refimg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.ri{display:grid;gap:4px;text-decoration:none;color:inherit;cursor:zoom-in;min-width:0}
+.ri-box{display:block;border:1px solid var(--line);border-radius:8px;background:#fff;padding:6px}
+.ri img{display:block;width:100%;aspect-ratio:1/1;object-fit:contain}
+.ri small{font-size:12px;color:var(--muted)}
 
 /* FAQ */
 .faq-hero{text-align:center;display:grid;gap:8px;padding-top:8px}
@@ -417,13 +428,14 @@ const SCHEMA={
  groups:{name:"模特兒社團",fields:[["name","社團名稱"],["link","連結"],["note","說明（選填）"],O]},
  pages:{name:"資源卡片",fields:[["t","卡片標題"],["d","卡片說明（例：IG・官方 LINE・經營工具）"],["m","卡片底部小字（選填）"],["en","頁面英文小標（選填，例：MY NOTES）"],["intro","頁面說明文字（選填）","area"],O]},
  products:{name:"商品",fields:[["name","商品名稱"],["cat","分類","select",()=>[["","（不分類）"],...new Set(D.products.map(x=>x.cat).filter(Boolean))]],["newcat","或新增一個分類（選填，填了就放到新分類）"],["price","價格（選填，例：NT$1,280）"],["note","說明／使用心得（選填）","area"],["link","商品連結"],["linkLabel","按鈕文字（選填，預設「查看商品」）"],["files","商品圖片（選填，第 1 張當封面）","files"],O]},
- tools:{name:"清單項目",fields:[["g","分類","select",()=>{const gs=[...new Set(D.tools.map(t=>t.g||"其他"))];return gs.length?gs:["基本設備"]}],["newg","或新增一個分類（選填，填了就放到新分類）"],["name","項目名稱"],["note","備註／使用心得（選填）","area"],["link","商品連結（選填）"],["linkLabel","按鈕文字（選填，預設「查看商品」）"],O]},
+ tools:{name:"清單項目",fields:[["g","分類","select",()=>{const gs=[...new Set(D.tools.map(t=>t.g||"其他"))];return gs.length?gs:["基本設備"]}],["newg","或新增一個分類（選填，填了就放到新分類）"],["name","項目名稱"],["note","備註／使用心得（選填）","area"],["link","商品連結（選填）"],["linkLabel","按鈕文字（選填，預設「查看商品」）"],["files","款式參考圖片（選填，可多張，每張可填說明）","files"],O]},
+ sitechk:{name:"開工準備清單標題與說明",fields:[["chkTitle","標題"],["chkIntro","說明文字（一行一段，清空就不顯示）","area"],["chkBtn","按鈕文字（清空就不顯示按鈕）"],["chkNote","勾選說明小字（清空就不顯示）","area"]]},
  spaces:{name:"租借管道",fields:[["region","地區","select",()=>{const r=[...new Set(D.spaces.map(x=>x.region).filter(Boolean))];return r.length?r:["台北"]}],["newregion","或新增一個地區（選填，填了就放到新地區）"],["name","名稱"],["platform","類型","select",["Instagram","Facebook","LINE","官方網站","預約網站","其他"]],["link","連結"],["note","說明（選填）"],O]},
  recruit:{name:"招募文案",fields:[["t","標題"],["d","說明"],["x","文案內容","area"],O]},
  forms:{name:"表單",fields:[["t","標題"],["d","說明（選填）","area"],["files","圖片或 PDF（選填）","files"],["x","純文字內容（選填）","area"],O]},
  notes:{name:"筆記",fields:[["page","放在哪一頁","select",()=>[...NOTE_PAGES,...D.pages.map(pg=>["pg_"+pg.id,pg.t])]],["t","標題"],["body","內容（一行一段）","area"],["hl","重點提醒框（選填）","area"],["link","連結（選填）"],["linkLabel","連結按鈕文字（選填）"],["files","圖片或 PDF（選填）","files"],O]}
 };
-const SITE_DEF={fmTitle:"表單使用說明",fmHl:"以下表單與衛教內容可以自行排版、加上自己的品牌 Logo，提供給自己的客人使用。",quoteTitle:"開始之後，這裡一直都在。",quoteBody:"從練習、接客，到建立自己的工作節奏。\n少一點摸索，多一點安心。",notice:"標示「範例」的內容是格式示範，請換成自己實際使用的資料。右上「編輯」可以修改所有內容。",spTitle:"全台美業時租工作室大全",spIntro:"依地區整理的時租空間與租借管道，也可以自己在 FB 社團或 IG 搜尋，加入後詢問能否租借。",supTitle:"耗材團購與醫材廠商",supIntro:"平常叫耗材的醫材行與團購管道。可上傳報價單，點圖放大查看。實際價格、庫存與配送條件請先向廠商確認。",prodTitle:"商品列表",prodIntro:"實際使用過的商品與購買連結，點圖片可放大。",commTitle:"熱蠟同行常用社群",priceIntro:"選擇品牌展開，點圖片即可開啟原尺寸，方便放大查閱。"};
+const SITE_DEF={fmTitle:"表單使用說明",fmHl:"以下表單與衛教內容可以自行排版、加上自己的品牌 Logo，提供給自己的客人使用。",quoteTitle:"開始之後，這裡一直都在。",quoteBody:"從練習、接客，到建立自己的工作節奏。\n少一點摸索，多一點安心。",notice:"標示「範例」的內容是格式示範，請換成自己實際使用的資料。右上「編輯」可以修改所有內容。",spTitle:"全台美業時租工作室大全",spIntro:"依地區整理的時租空間與租借管道，也可以自己在 FB 社團或 IG 搜尋，加入後詢問能否租借。",supTitle:"耗材團購與醫材廠商",supIntro:"平常叫耗材的醫材行與團購管道。可上傳報價單，點圖放大查看。實際價格、庫存與配送條件請先向廠商確認。",prodTitle:"商品列表",chkTitle:"開工準備清單",chkIntro:"清單照開工順序排，大型設備先備齊，耗材可以邊做邊補。\n在共享空間工作的話，先把場地已經有的東西勾掉，剩下的再採購。",chkBtn:"查看產品購買連結",chkNote:"勾選只記在這台裝置的瀏覽器，換手機或電腦不會同步。",prodIntro:"實際使用過的商品與購買連結，點圖片可放大。",commTitle:"熱蠟同行常用社群",priceIntro:"選擇品牌展開，點圖片即可開啟原尺寸，方便放大查閱。"};
 const COLS=["pages","products","faq","vendors","prices","refs","comms","tools","spaces","groups","recruit","forms","notes"];
 const D={},loaded={};COLS.forEach(c=>{D[c]=[];loaded[c]=false});
 let SITE={},DB=null,AS=null,dbState="loading",canEdit=false;
@@ -467,6 +479,7 @@ const prodCard=x=>{const f=(x.files||[]).find(f=>!isPdf(f));const n=(x.files||[]
   <div class="pbody"><h4>${esc(x.name)}</h4>${x.price?`<div class="pprice">${esc(x.price)}</div>`:""}${x.note?`<p class="pnote">${esc(x.note)}</p>`:""}
   ${URL(x.link)?`<a class="pbtn" href="${esc(URL(x.link))}" target="_blank" rel="noopener">🛒 ${esc(x.linkLabel||"查看商品")} ↗</a>`:""}
   <span class="acts">${edBtn("products",x.id)}</span></div></article>`};
+const refImgs=t=>{const fs=(t.files||[]).filter(f=>!isPdf(f));return fs.length?`<div class="refimg">${fs.map(f=>`<a class="ri" href="#" data-imgh="${esc(f.id)}" target="_blank" rel="noopener" data-lb="${esc(f.id)}" data-cap="${esc(t.name+(f.cap?"｜"+f.cap:""))}"><span class="ri-box"><img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" data-img="${esc(f.id)}" alt="${esc(t.name)}" loading="lazy"></span><small>${esc(f.cap||"款式參考")}・點圖放大</small></a>`).join("")}</div>`:""};
 const HD={};
 const H=(key,en,t,p,cls="sec-head")=>{HD[key]=[t,p??""];const T=SITE["h_"+key+"_t"]||t,P=SITE["h_"+key+"_p"]??p;
   return `<div class="${cls}"><div class="hrow"><div class="eyebrow">${en}</div><button class="btn ed" data-edit="sitehd" data-id="${key}">✎ 編輯標題與說明</button></div><h2>${esc(T)}</h2>${P?`<p class="pl">${esc(P)}</p>`:""}</div>`};
@@ -593,11 +606,17 @@ V.vendors=()=>`<div class="wrap view">${back()}
 V.tools=()=>{
   const groups=[...new Set(D.tools.map(t=>t.g||"其他"))];
   return `<div class="wrap view">${back()}
- ${head("EQUIPMENT","設備與工具清單","勾選會記在這台裝置上，開店採購時對照用。")}
- ${groups.map(g=>`<div class="box"><div class="hrow"><h3>${esc(g)}</h3><span class="acts"><button class="btn ed" data-edit="grp" data-id="${esc("tools::"+g)}">✎ 編輯分類</button>${addBtn("tools","新增項目",{g})}</span></div><div>${D.tools.filter(t=>(t.g||"其他")===g).map(t=>`<div class="check"><input type="checkbox" id="tk-${t.id}" data-k="${t.id}"><span><label for="tk-${t.id}">${esc(t.name)}</label>${t.note?`<small style="white-space:pre-line">${esc(t.note)}</small>`:""}${URL(t.link)?`<a class="pbtn" href="${esc(URL(t.link))}" target="_blank" rel="noopener">🛒 ${esc(t.linkLabel||"查看商品")} ↗</a>`:""}</span><span class="acts">${edBtn("tools",t.id)}</span></div>`).join("")}</div></div>`).join("")||emptyMsg("tools")}
+ ${head("EQUIPMENT","設備與工具清單","開工準備清單・商品連結・醫材廠商")}
+ ${(()=>{const t=SITE.chkTitle||SITE_DEF.chkTitle,ii=SITE.chkIntro??SITE_DEF.chkIntro,bt=SITE.chkBtn??SITE_DEF.chkBtn,nt=SITE.chkNote??SITE_DEF.chkNote;
+   return `<section class="refsec chkhead"><div class="hrow"><h2>${esc(t)}</h2><button class="btn ed" data-edit="sitechk">✎ 編輯標題與說明</button></div>
+   ${lines(ii).map(l=>`<p class="pl" style="margin:0">${esc(l)}</p>`).join("")}
+   ${bt?`<div><button class="cta" data-scroll="prods">${esc(bt)}</button></div>`:""}
+   ${nt?`<p class="small" style="margin:0">${esc(nt)}</p>`:""}
+   <div class="chkcount" id="tool-count"></div></section>`})()}
+ ${groups.map((g,gi)=>`<div class="box"><div class="hrow"><h3 class="chkg"><span class="gno">${gi<20?String.fromCharCode(0x2460+gi):(gi+1)+"."}</span>${esc(g)}</h3><span class="acts"><button class="btn ed" data-edit="grp" data-id="${esc("tools::"+g)}">✎ 編輯分類</button>${addBtn("tools","新增項目",{g})}</span></div><div>${D.tools.filter(t=>(t.g||"其他")===g).map(t=>`<div class="check"><input type="checkbox" id="tk-${t.id}" data-k="${t.id}"><span><label for="tk-${t.id}">${esc(t.name)}</label>${t.note?`<small style="white-space:pre-line">${esc(t.note)}</small>`:""}${URL(t.link)?`<a class="pbtn" href="${esc(URL(t.link))}" target="_blank" rel="noopener">🛒 ${esc(t.linkLabel||"查看商品")} ↗</a>`:""}${refImgs(t)}</span><span class="acts">${edBtn("tools",t.id)}</span></div>`).join("")}</div></div>`).join("")||emptyMsg("tools")}
  ${addBtn("tools","新增項目")}
- <div class="row"><span class="small" id="tool-count"></span><button class="btn" id="tool-reset">清除勾選</button></div>
- <section class="refsec">
+ <div class="row"><span></span><button class="btn" id="tool-reset">清除勾選</button></div>
+ <section class="refsec" id="prods">
   <div class="sec-head" style="margin:0"><div class="row"><div class="eyebrow">PRODUCTS</div><button class="btn ed" data-edit="sitepr">✎ 編輯標題與說明</button></div><h2>${esc(SITE.prodTitle||"商品列表")}</h2>${(SITE.prodIntro??"實際使用過的商品與購買連結，點圖片可放大。")?`<p class="pl">${esc(SITE.prodIntro??"實際使用過的商品與購買連結，點圖片可放大。")}</p>`:""}</div>
   ${(()=>{if(!D.products.length)return loaded.products?`<div class="empty">還沒有商品。${canEdit?"按「編輯」後用「＋ 新增商品」加入。":""}</div>`:emptyMsg("products");
     const cats=[...new Set(D.products.map(x=>x.cat||""))];const multi=cats.length>1||cats[0];
@@ -610,7 +629,7 @@ V.tools=()=>{
 </div>`};
 function initTools(){
   const st=store.get("wax-tools",{});const boxes=[...document.querySelectorAll("[data-k]")];
-  const upd=()=>{$("#tool-count").textContent=`已備齊 ${boxes.filter(b=>b.checked).length} / ${boxes.length} 項`};
+  const upd=()=>{const n=boxes.filter(b=>b.checked).length;$("#tool-count").innerHTML=`已準備 <b>${n}</b> / ${boxes.length} 項`};
   boxes.forEach(b=>{b.checked=!!st[b.dataset.k];b.addEventListener("change",()=>{st[b.dataset.k]=b.checked;store.set("wax-tools",st);upd()})});
   $("#tool-reset").addEventListener("click",()=>{boxes.forEach(b=>b.checked=false);for(const k in st)delete st[k];store.set("wax-tools",st);upd()});upd();
 }
