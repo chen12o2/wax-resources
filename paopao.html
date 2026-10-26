@@ -125,6 +125,8 @@ pre.tpl{white-space:pre-wrap;font-family:var(--body);font-size:14px;background:v
 .chkcount{font-size:15px;color:var(--ink);padding-top:2px}
 .chkcount b{font-size:18px;color:var(--coffee)}
 .chkg{display:flex;align-items:center;gap:6px}
+.gdesc{margin:10px 0 0;padding-top:10px;border-top:1px solid var(--line);font-size:13px;line-height:1.75;color:var(--muted);white-space:pre-line}
+.chkhlrow{margin-bottom:-4px}
 .gno{font-weight:400}
 .check{flex-wrap:wrap}
 .refimg{display:grid;grid-template-columns:1fr 1fr;gap:10px;flex:0 0 calc(100% - 26px);margin:2px 0 4px 26px;min-width:0}
@@ -430,7 +432,8 @@ const SCHEMA={
  pages:{name:"資源卡片",fields:[["t","卡片標題"],["d","卡片說明（例：IG・官方 LINE・經營工具）"],["m","卡片底部小字（選填）"],["en","頁面英文小標（選填，例：MY NOTES）"],["intro","頁面說明文字（選填）","area"],O]},
  products:{name:"商品",fields:[["name","商品名稱"],["cat","分類","select",()=>[["","（不分類）"],...GL("products")]],["newcat","或新增一個分類（選填，填了就放到新分類）"],["price","價格（選填，例：NT$1,280）"],["note","說明／使用心得（選填）","area"],["link","商品連結"],["linkLabel","按鈕文字（選填，預設「查看商品」）"],["files","商品圖片（選填，第 1 張當封面）","files"],O]},
  tools:{name:"清單項目",fields:[["g","分類","select",()=>{const gs=GL("tools");return gs.length?gs:["基本設備"]}],["newg","或新增一個分類（選填，填了就放到新分類）"],["name","項目名稱"],["note","備註／使用心得（選填）","area"],["link","商品連結（選填）"],["linkLabel","按鈕文字（選填，預設「查看商品」）"],["files","款式參考圖片（選填，可多張，每張可填說明）","files"],O]},
- sitechk:{name:"開工準備清單標題與說明",fields:[["chkTitle","標題"],["chkIntro","說明文字（一行一段，清空就不顯示）","area"],["chkBtn","按鈕文字（清空就不顯示按鈕）"],["chkNote","勾選說明小字（清空就不顯示）","area"]]},
+ sitechk:{name:"開工準備清單標題與說明",fields:[["chkTitle","標題"],["chkIntro","說明文字（一行一段，清空就不顯示）","area"],["chkBtn","按鈕文字（清空就不顯示按鈕）"],["chkNote","勾選說明小字（清空就不顯示）","area"],["chkHl","清單最下方重點提醒框（選填，清空就不顯示）","area"]]},
+ sitechkhl:{name:"清單最下方提醒框",fields:[["chkHl","提醒內容（清空就不顯示）","area"]]},
  spaces:{name:"租借管道",fields:[["region","地區","select",()=>{const r=[...new Set(D.spaces.map(x=>x.region).filter(Boolean))];return r.length?r:["台北"]}],["newregion","或新增一個地區（選填，填了就放到新地區）"],["name","名稱"],["platform","類型","select",["Instagram","Facebook","LINE","官方網站","預約網站","其他"]],["link","連結"],["note","說明（選填）"],O]},
  recruit:{name:"招募文案",fields:[["t","標題"],["d","說明"],["x","文案內容","area"],O]},
  forms:{name:"表單",fields:[["t","標題"],["d","說明（選填）","area"],["files","圖片或 PDF（選填）","files"],["x","純文字內容（選填）","area"],O]},
@@ -616,7 +619,8 @@ V.tools=()=>{
    ${bt?`<div><button class="cta" data-scroll="prods">${esc(bt)}</button></div>`:""}
    ${nt?`<p class="small" style="margin:0">${esc(nt)}</p>`:""}
    <div class="chkcount" id="tool-count"></div></section>`})()}
- ${groups.map((g,gi)=>`<div class="box"><div class="hrow"><h3 class="chkg"><span class="gno">${gi<20?String.fromCharCode(0x2460+gi):(gi+1)+"."}</span>${esc(g)}</h3><span class="acts"><button class="btn ed" data-edit="grp" data-id="${esc("tools::"+g)}">✎ 編輯分類</button>${addBtn("tools","新增項目",{g})}</span></div><div>${D.tools.filter(t=>(t.g||"其他")===g).map(t=>`<div class="check"><input type="checkbox" id="tk-${t.id}" data-k="${t.id}"><span><label for="tk-${t.id}">${esc(t.name)}</label>${t.note?`<small style="white-space:pre-line">${esc(t.note)}</small>`:""}${URL(t.link)?`<a class="pbtn" href="${esc(URL(t.link))}" target="_blank" rel="noopener">🛒 ${esc(t.linkLabel||"查看商品")} ↗</a>`:""}</span><span class="acts">${edBtn("tools",t.id)}</span>${refImgs(t)}</div>`).join("")}</div></div>`).join("")||emptyMsg("tools")}
+ ${groups.map((g,gi)=>`<div class="box"><div class="hrow"><h3 class="chkg"><span class="gno">${gi<20?String.fromCharCode(0x2460+gi):(gi+1)+"."}</span>${esc(g)}</h3><span class="acts"><button class="btn ed" data-edit="grp" data-id="${esc("tools::"+g)}">✎ 編輯標題與說明</button>${addBtn("tools","新增項目",{g})}</span></div><div>${D.tools.filter(t=>(t.g||"其他")===g).map(t=>`<div class="check"><input type="checkbox" id="tk-${t.id}" data-k="${t.id}"><span><label for="tk-${t.id}">${esc(t.name)}</label>${t.note?`<small style="white-space:pre-line">${esc(t.note)}</small>`:""}${URL(t.link)?`<a class="pbtn" href="${esc(URL(t.link))}" target="_blank" rel="noopener">🛒 ${esc(t.linkLabel||"查看商品")} ↗</a>`:""}</span><span class="acts">${edBtn("tools",t.id)}</span>${refImgs(t)}</div>`).join("")}</div>${(SITE.gdesc||{})["tools::"+g]?`<p class="gdesc">${esc(SITE.gdesc["tools::"+g])}</p>`:""}</div>`).join("")||emptyMsg("tools")}
+ ${D.tools.length?`<div class="hrow chkhlrow"><span></span><button class="btn ed" data-edit="sitechkhl">✎ ${SITE.chkHl?"編輯":"新增"}最下方提醒框</button></div>${SITE.chkHl?`<blockquote class="hl">${esc(SITE.chkHl)}</blockquote>`:""}`:""}
  ${addBtn("tools","新增項目")}
  <div class="row"><span></span><button class="btn" id="tool-reset">清除勾選</button></div>
  <section class="refsec" id="prods">
@@ -713,11 +717,11 @@ let ed=null;
 function openEditor(col,id,preset){
   if(col==="sitehd")SCHEMA.sitehd={name:"標題與說明",fields:[["h_"+id+"_t","標題"],["h_"+id+"_p","說明文字（清空就不顯示）","area"]]};
   if(col==="sitehs")SCHEMA.sitehs={name:"標題",fields:[["h_"+id+"_t","標題"]]};
-  if(col==="grp"){const gc=id.split("::")[0];SCHEMA.grp={name:gc==="spaces"?"地區":"分類",fields:[["gname",(gc==="spaces"?"地區":"分類")+"名稱（底下的項目會一起改）"],...(gc==="tools"||gc==="products"?[["gpos","分類順序（填 1 就排第一個）","num"]]:[])]}}
+  if(col==="grp"){const gc=id.split("::")[0];SCHEMA.grp={name:gc==="spaces"?"地區":"分類",fields:[["gname",(gc==="spaces"?"地區":"分類")+"名稱（底下的項目會一起改）"],...(gc==="tools"?[["gdesc","分類說明（顯示在這個分類最下方，選填）","area"]]:[]),...(gc==="tools"||gc==="products"?[["gpos","分類順序（填 1 就排第一個）","num"]]:[])]}}
   if(col==="sitecard")SCHEMA.sitecard={name:"卡片",fields:[["c_"+id+"_t","卡片標題"],["c_"+id+"_d","卡片說明"]]};
   if(col==="sitecards")SCHEMA.sitecards={name:"首頁卡片標題與說明",fields:RESB().flatMap((r,i)=>[["c_"+r.id+"_t",`卡片 ${String(i+1).padStart(2,"0")} 標題`],["c_"+r.id+"_d",`卡片 ${String(i+1).padStart(2,"0")} 說明`]])};
   const s=SCHEMA[col];
-  const old=col==="grp"?{gname:id.split("::").slice(1).join("::"),gpos:GL(id.split("::")[0]).indexOf(id.split("::").slice(1).join("::"))+1}:/^site/.test(col)?{...SITE_DEF,...hdDefaults(),priceTitle:"品牌官方價目表",...SITE}:(id?D[col].find(d=>d.id===id):null)||{};
+  const old=col==="grp"?{gname:id.split("::").slice(1).join("::"),gdesc:(SITE.gdesc||{})[id]||"",gpos:GL(id.split("::")[0]).indexOf(id.split("::").slice(1).join("::"))+1}:/^site/.test(col)?{...SITE_DEF,...hdDefaults(),priceTitle:"品牌官方價目表",...SITE}:(id?D[col].find(d=>d.id===id):null)||{};
   const vals={...(preset||{}),...old};
   if(!id&&!/^site/.test(col)){const max=Math.max(0,...D[col].map(d=>+d.o||0));vals.o=max+1;if(col==="faq"&&!vals.c)vals.c=CATS[0];if(col==="notes"&&!vals.page)vals.page=cur.v==="home"?"biz":cur.v}
   ed={col,id,old,files:((vals.files)||[]).map(f=>({...f})),uploading:0};
@@ -816,7 +820,7 @@ async function saveEditor(next){
     $("#sh-save").disabled=true;
     try{const order=GL(gc);for(const t of D[gc].filter(t=>(t[gf]||fb)===gv)){if(t[gf]!==nn)await DB.collection(gc).doc(t.id).update({[gf]:nn})}
       if(gc==="tools"||gc==="products"){const rest=order.filter(x=>x!==gv&&x!==nn),pos=Math.min(Math.max(1,Math.round(vals.gpos)||1),rest.length+1);rest.splice(pos-1,0,nn);
-        const go={};for(const k in SITE.gord||{})if(!k.startsWith(gc+"::"))go[k]=SITE.gord[k];rest.forEach((x,i)=>go[gc+"::"+x]=i+1);await DB.doc("site/main").set({...SITE,gord:go})}if(gc==="spaces"&&spReg===gv)spReg=nn;closeEditor()}
+        const go={};for(const k in SITE.gord||{})if(!k.startsWith(gc+"::"))go[k]=SITE.gord[k];rest.forEach((x,i)=>go[gc+"::"+x]=i+1);const gd={...(SITE.gdesc||{})};delete gd[ed.id];if(gc==="tools"&&vals.gdesc)gd[gc+"::"+nn]=vals.gdesc;await DB.doc("site/main").set({...SITE,gord:go,gdesc:gd})}if(gc==="spaces"&&spReg===gv)spReg=nn;closeEditor()}
     catch(e){$("#sh-save").disabled=false;$("#sh-status").textContent="儲存失敗，請檢查網路後再試一次。"}
     return}
   const req={pages:"t",products:"name",comms:"name",refs:"t",faq:"q",vendors:"n",prices:"brand",groups:"name",tools:"name",spaces:"name",recruit:"t",forms:"t",notes:"t"}[ed.col];
