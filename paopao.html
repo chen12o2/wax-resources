@@ -152,6 +152,8 @@ pre.tpl{white-space:pre-wrap;font-family:var(--body);font-size:14px;background:v
 .sclear:hover{background:var(--khaki);color:var(--paper)}
 .search{width:100%;font:inherit;padding:12px 18px;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--ink)}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
+body:not(.editing) .edonly{display:none}
+.hchips{margin:-6px 0 16px}
 .chip{flex:none;border:1px solid var(--line);background:var(--paper);color:var(--muted);font-size:13px;padding:6px 14px;border-radius:999px;cursor:pointer}
 .chip[aria-pressed="true"]{background:var(--coffee);border-color:var(--coffee);color:var(--paper)}
 .qlist{display:grid;border-top:1px solid var(--line)}
@@ -444,7 +446,7 @@ const SCHEMA={
  refs:{name:"折數參考表",fields:[["t","標題"],["intro","開頭說明","area"],["cols","表頭（用｜分隔，例：品牌｜折數參考）"],["rows","表格內容（一行一列，用｜分隔）","area"],["body","內文","area"],["hl","重點提醒框（選填）","area"],["foot","底部小字（選填）","area"],O]},
  prices:{name:"品牌價目表",fields:[["brand","品牌名稱"],["files","價目表圖片（每張可填說明）","files"],O]},
  groups:{name:"模特兒社團",fields:[["name","社團名稱"],["link","連結"],["note","說明（選填）"],O]},
- pages:{name:"資源卡片",fields:[["t","卡片標題"],["d","卡片說明（例：IG・官方 LINE・經營工具）"],["m","卡片底部小字（選填）"],["en","頁面英文小標（選填，例：MY NOTES）"],["intro","頁面說明文字（選填）","area"],O]},
+ pages:{name:"資源卡片",fields:[["t","卡片標題"],["cat","首頁分類","select",()=>[["","（不分類）"],...HCATS()]],["newcat","或新增一個分類（選填，填了就放到新分類）"],["d","卡片說明（例：IG・官方 LINE・經營工具）"],["m","卡片底部小字（選填）"],["en","頁面英文小標（選填，例：MY NOTES）"],["intro","頁面說明文字（選填）","area"],O]},
  products:{name:"商品",fields:[["name","商品名稱"],["cat","分類","select",()=>[["","（不分類）"],...GL("products")]],["newcat","或新增一個分類（選填，填了就放到新分類）"],["price","價格（選填，例：NT$1,280）"],["note","說明／使用心得（選填）","area"],["link","商品連結"],["linkLabel","按鈕文字（選填，預設「查看商品」）"],["files","商品圖片（選填，第 1 張當封面）","files"],O]},
  tools:{name:"清單項目",fields:[["g","分類","select",()=>{const gs=GL("tools");return gs.length?gs:["基本設備"]}],["newg","或新增一個分類（選填，填了就放到新分類）"],["name","項目名稱"],["note","備註／使用心得（選填）","area"],["link","商品連結（選填）"],["linkLabel","按鈕文字（選填，預設「查看商品」）"],["files","款式參考圖片（選填，可多張，每張可填說明）","files"],O]},
  sitechk:{name:"開工準備清單標題與說明",fields:[["chkTitle","標題"],["chkIntro","說明文字（一行一段，清空就不顯示）","area"],["chkBtn","按鈕文字（清空就不顯示按鈕）"],["chkNote","勾選說明小字（清空就不顯示）","area"],["chkHl","清單最下方重點提醒框（選填，清空就不顯示）","area"]]},
@@ -533,6 +535,7 @@ async function makePdf(btn){const f=D.forms.find(x=>x.id===btn.dataset.pdf);if(!
     if(!pages.length)throw new Error("noimg");saveBlob(buildPdf(pages),dlName({type:"application/pdf"},f.t,0,1));btn.textContent=o}
   catch(err){btn.textContent="下載失敗，請再試一次";setTimeout(()=>btn.textContent=o,2500)}
   btn.disabled=false}
+const HCATS=()=>[...new Set(RES().map(r=>r.cat).filter(Boolean))];
 const NUMC=i=>i<20?String.fromCharCode(0x2460+i):(i+1)+".";
 const BPAGES=()=>[["home","資源庫首頁"],...RES().map(r=>[r.id,r.t])];
 const blocksAt=(page,pos)=>D.blocks.filter(b=>(b.page||"tools")===page&&((b.pos||"mid")===pos||(page!=="tools"&&pos==="end"&&(b.pos||"mid")==="mid"))).map(b=>{const subs=D.bsubs.filter(x=>x.b===b.id);
@@ -558,7 +561,7 @@ const notesFor=(page,style)=>D.notes.filter(n=>n.page===page).map(n=>style==="li
   :`<div class="tip"><div class="row"><h3>${esc(n.t)}</h3>${edBtn("notes",n.id)}</div>${lines(n.body).map(l=>`<p>${esc(l)}</p>`).join("")}${n.hl?`<blockquote class="hl hl-in">${esc(n.hl)}</blockquote>`:""}${noteExtra(n)}</div>`).join("");
 const noteExtra=n=>`${URL(n.link)?`<div><a class="pbtn" href="${esc(URL(n.link))}" target="_blank" rel="noopener">${esc(n.linkLabel||"開啟連結")} ↗</a></div>`:""}${gallery(n.files,n.t)}`;
 
-const RES=()=>RESB().map(r=>({...r,t:SITE["c_"+r.id+"_t"]||r.t,d:SITE["c_"+r.id+"_d"]||r.d})).concat(D.pages.map(pg=>({id:"p_"+pg.id,t:pg.t,d:pg.d||"",m:pg.m||`${D.notes.filter(n=>n.page==="pg_"+pg.id).length} 則內容`,nav:""})));
+const RES=()=>RESB().map(r=>({...r,t:SITE["c_"+r.id+"_t"]||r.t,d:SITE["c_"+r.id+"_d"]||r.d,cat:SITE["c_"+r.id+"_cat"]||""})).concat(D.pages.map(pg=>({id:"p_"+pg.id,t:pg.t,d:pg.d||"",cat:pg.cat||"",m:pg.m||`${D.notes.filter(n=>n.page==="pg_"+pg.id).length} 則內容`,nav:""})));
 const RESB=()=>[
  {id:"faq",t:"客人常見Q&A",d:"白話回答・專業學理・一鍵複製",m:`${D.faq.length} 題完整收錄`,nav:`${D.faq.length} 題`},
  {id:"vendors",t:"品牌與廠商採購",d:"品牌價目表・訂貨方式・聯絡資訊",m:`${D.prices.length} 品牌價目表 · ${D.vendors.length} 家廠商`,nav:"社群・廠商"},
@@ -579,19 +582,20 @@ V.home=()=>{
   <p>${esc(SITE.lead||"我的熱蠟工作室資源庫。從技術練習到真正開始接客與經營，把累積的經驗與資源整理在這裡，隨時回來查閱。")}</p>
   <div class="ctas"><button class="cta" data-go="faq">查閱客人 FAQ →</button><button class="cta ghost" data-scroll="lib">探索所有資源</button></div>
 </div></section>
-${D.blocks.some(b=>b.page==="home"&&b.pos==="top")||canEdit?`<section class="sec"><div class="wrap view" style="padding:0">${blocksAt("home","top")}</div></section>`:""}
+${(()=>{const has=D.blocks.some(b=>b.page==="home"&&b.pos==="top");return has||canEdit?`<section class="sec${has?"":" edonly"}"><div class="wrap view" style="padding:0">${blocksAt("home","top")}</div></section>`:""})()}
 <section class="sec" id="lib"><div class="wrap">
   ${isAdmin&&MEMBERS.some(m=>m.status==="pending")?`<button class="notice" data-go="members" style="width:100%;text-align:left;cursor:pointer;margin-bottom:14px"><b>有 ${MEMBERS.filter(m=>m.status==="pending").length} 位新會員等待審核</b><p>點這裡前往會員管理 →</p></button>`:""}${H("library","YOUR RESOURCE LIBRARY","探索資源","每一步，都有可以回來查閱的方向。")}
-  <div class="cards">${RES().map((r,i)=>`<div class="rwrap"><button class="rcard" data-go="${r.id}"><span class="no">${String(i+1).padStart(2,"0")}</span><h3>${esc(r.t)}</h3><p>${esc(r.d)}</p><span class="meta">${esc(r.m)}</span></button>${/^p_/.test(r.id)?`<div class="racts">${edBtn("pages",r.id.slice(2))}</div>`:`<div class="racts"><button class="btn ed" data-edit="sitecard" data-id="${r.id}">✎ 編輯</button></div>`}</div>`).join("")}</div>
+  ${(()=>{const cats=HCATS();if(!cats.length)return "";if(homeCat!=="全部"&&!cats.includes(homeCat))homeCat="全部";return `<div class="chips hchips">${["全部",...cats].map(c=>`<button class="chip" data-hc="${esc(c)}" aria-pressed="${c===homeCat}">${c==="全部"?"全部資源":esc(c)}（${c==="全部"?RES().length:RES().filter(r=>r.cat===c).length}）</button>`).join("")}</div>`})()}
+  <div class="cards">${RES().map((r,i)=>[r,i]).filter(([r])=>homeCat==="全部"||r.cat===homeCat).map(([r,i])=>`<div class="rwrap"><button class="rcard" data-go="${r.id}"><span class="no">${String(i+1).padStart(2,"0")}</span><h3>${esc(r.t)}</h3><p>${esc(r.d)}</p><span class="meta">${esc(r.m)}</span></button>${/^p_/.test(r.id)?`<div class="racts">${edBtn("pages",r.id.slice(2))}</div>`:`<div class="racts"><button class="btn ed" data-edit="sitecard" data-id="${r.id}">✎ 編輯</button></div>`}</div>`).join("")}</div>
   <div style="margin-top:12px">${addBtn("pages","新增卡片")}</div>
 </div></section>
-${D.blocks.some(b=>b.page==="home"&&b.pos!=="top")||canEdit?`<section class="sec"><div class="wrap view" style="padding:0">${blocksAt("home","end")}</div></section>`:""}
+${(()=>{const has=D.blocks.some(b=>b.page==="home"&&b.pos!=="top");return has||canEdit?`<section class="sec${has?"":" edonly"}"><div class="wrap view" style="padding:0">${blocksAt("home","end")}</div></section>`:""})()}
 <section class="sec"><div class="wrap" style="display:grid;gap:14px"><div class="hrow"><span></span><button class="btn ed" data-edit="sitehm">✎ 編輯結語與使用說明</button></div>
   <div class="quote"><b>${esc(SITE.quoteTitle||"開始之後，這裡一直都在。")}</b><p>${esc(SITE.quoteBody||"從練習、接客，到建立自己的工作節奏。\n少一點摸索，多一點安心。")}</p></div>
   <div class="notice">${HS("notice","使用說明")}<p>${esc(SITE.notice||"標示「範例」的內容是格式示範，請換成自己實際使用的資料。")}</p></div>
 </div></section>`};
 
-let faqCat="全部",faqQ="",spReg="全台";
+let homeCat="全部",faqCat="全部",faqQ="",spReg="全台";
 V.faq=()=>`<div class="wrap view">
   ${back()}
   ${H("faq","CLIENT Q&A","客人常見 Q&A","把專業學理變成客人聽得懂的回答。搜尋問題，一鍵複製白話回覆。","faq-hero")}
@@ -794,7 +798,7 @@ function openEditor(col,id,preset){
   if(col==="sitehd")SCHEMA.sitehd={name:"標題與說明",fields:[["h_"+id+"_t","標題"],["h_"+id+"_p","說明文字（清空就不顯示）","area"]]};
   if(col==="sitehs")SCHEMA.sitehs={name:"標題",fields:[["h_"+id+"_t","標題"]]};
   if(col==="grp"){const gc=id.split("::")[0];SCHEMA.grp={name:gc==="spaces"?"地區":"分類",fields:[["gname",(gc==="spaces"?"地區":"分類")+"名稱（底下的項目會一起改）"],...(gc==="tools"?[["gdesc","分類說明（顯示在這個分類最下方，選填）","area"]]:[]),...(gc==="tools"||gc==="products"?[["gpos","分類順序（填 1 就排第一個）","num"]]:[])]}}
-  if(col==="sitecard")SCHEMA.sitecard={name:"卡片",fields:[["c_"+id+"_t","卡片標題"],["c_"+id+"_d","卡片說明"]]};
+  if(col==="sitecard")SCHEMA.sitecard={name:"卡片",fields:[["c_"+id+"_t","卡片標題"],["c_"+id+"_d","卡片說明"],["c_"+id+"_cat","分類","select",()=>[["","（不分類）"],...HCATS()]],["newhcat","或新增一個分類（選填，填了就放到新分類）"]]};
   if(col==="sitecards")SCHEMA.sitecards={name:"首頁卡片標題與說明",fields:RESB().flatMap((r,i)=>[["c_"+r.id+"_t",`卡片 ${String(i+1).padStart(2,"0")} 標題`],["c_"+r.id+"_d",`卡片 ${String(i+1).padStart(2,"0")} 說明`]])};
   const s=SCHEMA[col];
   const old=col==="grp"?{gname:id.split("::").slice(1).join("::"),gdesc:(SITE.gdesc||{})[id]||"",gpos:GL(id.split("::")[0]).indexOf(id.split("::").slice(1).join("::"))+1}:/^site/.test(col)?{...SITE_DEF,...hdDefaults(),priceTitle:"品牌官方價目表",...SITE}:(id?D[col].find(d=>d.id===id):null)||{};
@@ -889,7 +893,7 @@ async function saveEditor(next){
   if(ed.uploading){$("#sh-status").textContent="檔案還在上傳，請稍等。";return}
   SCHEMA[ed.col].fields.forEach(([k,,type])=>{if(type==="files"){vals[k]=ed.files;return}const el=$("#f-"+k);vals[k]=type==="num"?(parseFloat(el.value)||0):el.value.trim()});
   if(ed.col==="faq"&&!SUBS[vals.c])vals.sub="";
-  {const nk={tools:["newg","g"],spaces:["newregion","region"],products:["newcat","cat"]}[ed.col];if(nk){if(vals[nk[0]])vals[nk[1]]=vals[nk[0]];delete vals[nk[0]]}}
+  {const nk={tools:["newg","g"],spaces:["newregion","region"],products:["newcat","cat"],pages:["newcat","cat"],sitecard:["newhcat","c_"+ed.id+"_cat"]}[ed.col];if(nk){if(vals[nk[0]])vals[nk[1]]=vals[nk[0]];delete vals[nk[0]]}}
   if(ed.col==="grp"){
     const nn=vals.gname;if(!nn){$("#sh-status").textContent="請填寫名稱。";return}
     const [gc,...rest]=ed.id.split("::"),gv=rest.join("::"),[gf,fb]=GRPF[gc];
@@ -998,6 +1002,7 @@ document.addEventListener("click",e=>{
   const lb=e.target.closest("[data-lb]");if(lb){e.preventDefault();$("#lb-img").src="data:image/gif;base64,R0lGODlhAQABAAAAACw=";loadImg(lb.dataset.lb).then(u=>{if(u)$("#lb-img").src=u});$("#lb-cap").textContent=lb.dataset.cap||"";$("#lightbox").hidden=false;return}
   if(e.target.id==="lightbox"||e.target.id==="lb-close"){$("#lightbox").hidden=true;return}
   if(e.target.closest("[data-subs]")){openSubs();return}
+  const hc=e.target.closest("[data-hc]");if(hc){homeCat=hc.dataset.hc;render();return}
   const spr=e.target.closest("[data-spr]");if(spr){spReg=spr.dataset.spr;render();return}
   const cg=e.target.closest("[data-cgo]");if(cg){faqCat=cg.dataset.cgo;faqQ="";go("faq");return}
   const q=e.target.closest("[data-q]");if(q){go("q",q.dataset.q);return}
