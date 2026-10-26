@@ -1,0 +1,1103 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>熱蠟工作室-同行</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Noto+Serif+TC:wght@500;700&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+/* Layout: top bar + slide-in menu; home = hero + numbered resource cards; each resource opens as its own view; edit mode opens a bottom sheet */
+:root{
+  --bg:#E9DAC6; --paper:#F6EEE3; --ink:#3F2F25; --muted:#7E6855; --line:#D5C0A5;
+  --khaki:#A6845F; --tea:#D8BE9E; --coffee:#6B4C36; --soft:#DFCBB2; --danger:#A3412E;
+  --latin:"Cormorant Garamond",Georgia,serif;
+  --display:"Noto Serif TC","Songti TC",serif;
+  --body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+}
+/* single milk-tea look in every theme */
+*{box-sizing:border-box}
+html{touch-action:pan-x pan-y;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+input,textarea,select{font-size:16px!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.75}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
+.wrap{max-width:880px;margin:0 auto;padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px))}
+button{font:inherit;color:inherit}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--khaki);outline-offset:2px}
+a{color:var(--coffee)}
+
+/* top bar */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);border-bottom:1px solid var(--line)}
+.bar .wrap{display:flex;align-items:center;gap:10px;padding-block:10px}
+.icon-btn{border:1px solid var(--line);background:var(--paper);width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:16px;flex:none}
+.brand{flex:1;min-width:0;line-height:1.2}
+.brand b{font-family:var(--latin);font-size:18px;letter-spacing:.12em;font-weight:600;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.brand small{display:block;font-size:10px;letter-spacing:.22em;color:var(--muted)}
+.home-link{border:0;background:none;color:var(--coffee);cursor:pointer;font-size:14px}
+.edit-toggle{border:1px solid var(--coffee);background:none;color:var(--coffee);border-radius:999px;padding:5px 14px;font-size:13px;cursor:pointer}
+body.editing .edit-toggle{background:var(--coffee);color:var(--paper)}
+.edit-banner{background:var(--coffee);color:var(--paper);font-size:13px;text-align:center;padding-block:6px}
+
+/* drawer */
+.scrim{position:fixed;inset:0;background:rgba(40,30,22,.35);z-index:40;opacity:0;pointer-events:none;transition:opacity .25s}
+.drawer{position:fixed;top:0;bottom:0;left:0;width:min(330px,88vw);z-index:50;background:var(--paper);transform:translateX(-102%);transition:transform .3s ease;display:flex;flex-direction:column;
+  padding:calc(18px + env(safe-area-inset-top,0px)) 20px calc(20px + env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));overflow-y:auto}
+body.open .scrim{opacity:1;pointer-events:auto}
+body.open .drawer{transform:none}
+.drawer .top{display:flex;justify-content:space-between;align-items:center}
+.drawer .lbl{font-family:var(--latin);letter-spacing:.2em;font-size:13px;color:var(--muted);margin:22px 0 8px}
+.drawer nav{display:grid}
+.drawer nav button{display:flex;justify-content:space-between;gap:10px;text-align:left;border:0;border-bottom:1px solid var(--line);background:none;padding:13px 2px;cursor:pointer}
+.drawer nav button span:last-child{color:var(--muted);font-size:12px;white-space:nowrap}
+.drawer nav .sub-item{padding-left:16px;font-size:14px}
+.drawer .foot{margin-top:auto;padding-top:20px;font-size:12px;color:var(--muted)}
+
+/* hero */
+.hero{padding-block:48px 36px}
+.eyebrow{font-family:var(--latin);letter-spacing:.3em;font-size:13px;color:var(--khaki);font-weight:600}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(30px,7vw,46px);line-height:1.3;margin:12px 0 16px;text-wrap:balance}
+.hero p{color:var(--muted);max-width:34em;margin:0;white-space:pre-line}
+.ctas{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+.cta{border:1px solid var(--coffee);background:var(--coffee);color:var(--paper);padding:11px 20px;border-radius:999px;cursor:pointer}
+.cta.ghost{background:none;color:var(--coffee)}
+.cta:disabled{opacity:.6;cursor:wait}
+
+/* section heads */
+.sec{padding-block:28px}
+.sec-head{display:grid;gap:4px;margin-bottom:20px}
+h2{font-family:var(--display);font-size:clamp(22px,4.5vw,28px);margin:0;text-wrap:balance}
+.sec-head p{margin:0;color:var(--muted)}
+h3{font-size:17px;margin:0}
+
+/* resource cards */
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (max-width:520px){.cards{gap:10px}.rcard{padding:14px;border-radius:14px}.rcard .no{font-size:24px}.rcard h3{font-size:15px}.rcard p{font-size:12.5px}.rcard .meta{font-size:11px}}
+.rcard{display:grid;grid-template-rows:auto auto 1fr auto;gap:6px;text-align:left;background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:20px;cursor:pointer;transition:border-color .2s,transform .2s}
+.rcard:hover{border-color:var(--khaki);transform:translateY(-2px)}
+.rcard .no{font-family:var(--latin);font-size:30px;color:var(--khaki);line-height:1}
+.rcard p{margin:0;color:var(--muted);font-size:14px}
+.rcard .meta{margin-top:10px;font-size:12px;color:var(--coffee);border-top:1px dashed var(--line);padding-top:10px}
+
+.quote{background:var(--soft);border-radius:16px;padding:24px;text-align:center}
+.quote b{font-family:var(--display);font-size:19px;display:block;margin-bottom:6px}
+.quote p{margin:0;color:var(--muted);white-space:pre-line}
+.notice{border:1px solid var(--line);border-radius:14px;padding:18px;background:var(--paper)}
+.notice p{margin:6px 0 0;color:var(--muted);font-size:14px;white-space:pre-line}
+
+/* views */
+.view{padding-block:24px 64px;display:grid;gap:18px}
+.back{justify-self:start;border:0;background:none;color:var(--coffee);cursor:pointer;padding:0;font-size:14px}
+.box{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:10px;min-width:0}
+.tip{background:var(--soft);border-radius:14px;padding:16px 18px;display:grid;gap:8px;min-width:0}
+.tip h3{color:var(--coffee)}
+.tip p{margin:0}
+.small{font-size:13px;color:var(--muted)}
+.tag{display:inline-block;font-size:11px;letter-spacing:.06em;padding:1px 9px;border-radius:999px;background:var(--tea);color:var(--ink);font-weight:500;white-space:nowrap}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.acts{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.btn{border:1px solid var(--khaki);background:none;color:var(--coffee);font-size:13px;padding:6px 14px;border-radius:999px;cursor:pointer}
+.btn.done{background:var(--coffee);border-color:var(--coffee);color:var(--paper)}
+.ed{display:none!important}
+body.editing .ed{display:inline-flex!important}
+.btn.ed{border-style:dashed}
+.btn.del{border-color:var(--danger);color:var(--danger)}
+.btn.del.armed{background:var(--danger);color:var(--paper);border-style:solid}
+.add{justify-self:start}
+.empty{border:1px dashed var(--line);border-radius:14px;padding:18px;color:var(--muted);text-align:center}
+ul.clean{margin:0;padding-left:1.2em}
+.table-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{color:var(--muted);font-weight:500;font-size:13px}
+pre.tpl{white-space:pre-wrap;font-family:var(--body);font-size:14px;background:var(--bg);border-radius:10px;padding:14px;margin:0}
+.check{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px dashed var(--line)}
+.check:last-child{border-bottom:0}
+.check input{margin-top:6px;accent-color:var(--coffee);width:16px;height:16px;flex:none}
+.check span{flex:1;min-width:0}
+.check small{display:block;color:var(--muted)}
+
+/* FAQ */
+.faq-hero{text-align:center;display:grid;gap:8px;padding-top:8px}
+.faq-hero p{margin:0;color:var(--muted)}
+.searchbox{position:relative}
+.searchbox .search{padding-right:48px}
+.search::-webkit-search-cancel-button{-webkit-appearance:none;display:none}
+.sclear{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:32px;height:32px;border-radius:50%;border:0;background:var(--tea);color:var(--coffee);font-size:18px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.sclear:hover{background:var(--khaki);color:var(--paper)}
+.search{width:100%;font:inherit;padding:12px 18px;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{flex:none;border:1px solid var(--line);background:var(--paper);color:var(--muted);font-size:13px;padding:6px 14px;border-radius:999px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--coffee);border-color:var(--coffee);color:var(--paper)}
+.qlist{display:grid;border-top:1px solid var(--line)}
+.qsub{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:var(--coffee);padding:16px 4px 8px;border-bottom:1px dashed var(--line)}
+.qsub::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--khaki);flex:none}
+.qsub span{font-weight:400;color:var(--muted);font-size:12px}
+.qnav{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.qnav .qpos{font-family:var(--latin);font-size:18px;color:var(--muted);font-variant-numeric:tabular-nums}
+.btn:disabled{opacity:.4;cursor:default}
+.qgroup{display:flex;align-items:center;gap:12px;font-family:var(--display);font-weight:700;font-size:19px;padding:26px 2px 10px;border-bottom:1px solid var(--line)}
+.qgroup:first-child{padding-top:14px}
+.qgroup .gn{font-family:var(--latin);font-size:22px;color:var(--coffee);font-variant-numeric:tabular-nums}
+.qgroup .gbar{width:1px;height:20px;background:var(--khaki)}
+.qitem{display:flex;gap:12px;align-items:baseline;text-align:left;border:0;border-bottom:1px solid var(--line);background:none;padding:15px 4px;cursor:pointer}
+.qitem .n{font-family:var(--latin);color:var(--khaki);font-size:18px;min-width:2ch;font-variant-numeric:tabular-nums}
+.qitem .t{flex:1;min-width:0}
+.qitem .arrow{color:var(--muted)}
+.qtitle{margin-top:8px;font-size:clamp(22px,6.2vw,28px);font-weight:700;line-height:1.5;letter-spacing:.02em;text-wrap:wrap;word-break:normal}
+.answer{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:22px;display:grid;gap:14px}
+.answer h3{font-family:var(--display);font-size:16px;color:var(--coffee)}
+.answer .text{font-size:16px;margin:0;white-space:pre-line}
+details.theory{border-top:1px solid var(--line);padding-top:12px}
+details.theory summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;font-weight:500}
+details.theory summary::-webkit-details-marker{display:none}
+details.theory summary::after{content:"＋";color:var(--khaki)}
+details.theory[open] summary::after{content:"－"}
+details.theory p{margin:10px 0 0;color:var(--muted);font-size:14px;white-space:pre-line}
+
+/* editor sheet */
+.sheet{position:fixed;inset:0;z-index:60;background:rgba(40,30,22,.4);display:flex;align-items:flex-end;justify-content:center}
+.sheet-card{background:var(--paper);width:100%;max-width:640px;max-height:92%;overflow-y:auto;border-radius:20px 20px 0 0;display:grid;gap:14px;
+  padding:20px max(20px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px))}
+@media (min-width:700px){.sheet{align-items:center}.sheet-card{border-radius:20px}}
+.sheet form{display:grid;gap:12px}
+.field{display:grid;gap:4px}
+.field label{font-size:13px;color:var(--muted)}
+.field input,.field textarea,.field select{font:inherit;width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
+.fwrap{position:relative}
+.fwrap input,.fwrap textarea{padding-right:46px}
+.fclear{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:50%;border:0;background:var(--tea);color:var(--coffee);font-size:16px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.fwrap.area .fclear{top:8px;transform:none}
+.ssrow{display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;align-items:center}
+.ssrow input{font:inherit;width:100%;padding:10px 46px 10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
+.ssrow.gone input{text-decoration:line-through;opacity:.5}
+.ssord{display:flex;flex-direction:column;gap:2px}
+.ssord .btn{padding:0 8px;font-size:12px;line-height:18px}
+.sscnt{white-space:nowrap}
+.vnote{margin:8px 0 0;font-size:15px;white-space:pre-line;line-height:1.8}
+.vship h4{margin:6px 0 4px;font-size:17px;font-weight:700}
+.vship ul{margin:0;padding-left:1.6em;display:grid;gap:4px}
+.vbtn{display:inline-block;margin-top:6px;background:var(--coffee);color:var(--paper);text-decoration:none;padding:11px 22px;border-radius:8px;font-size:15px}
+.vbtn:hover{opacity:.9}
+.vfootrow{display:grid;gap:8px;justify-items:start}
+.vfoot{margin:0;font-size:13px;color:var(--muted);white-space:pre-line;line-height:1.8}
+.refsec{display:grid;gap:12px;border-top:1px solid var(--line);padding-top:22px;margin-top:6px}
+.pl{white-space:pre-line;line-height:1.8}
+.reft th{background:var(--soft)}
+.reft td,.reft th{white-space:normal;padding:10px 12px}
+.hl{margin:0;background:var(--soft);border-left:3px solid var(--khaki);padding:14px 16px;border-radius:0 10px 10px 0;white-space:pre-line;font-size:14px;line-height:1.8}
+.thumb .tcap{display:grid;gap:2px;padding:4px 4px 2px}
+.thumb .tcap b{font-size:13px;font-weight:700;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.thumb .tcap small{font-size:12px;color:var(--muted)}
+.gal.big{grid-template-columns:1fr;gap:14px}
+.gal.big .thumb{padding:10px;background:var(--paper)}
+.gal.big .thumb img{aspect-ratio:auto;height:auto;object-fit:contain;background:#fff}
+.gal.big .tcap{padding:10px 6px 4px}
+.gal.big .tcap b{font-size:16px;font-weight:500;white-space:normal}
+.gal.big .tcap small{font-size:13px}
+.thumb .tcap,.thumb .tcap small{letter-spacing:normal;white-space:normal;overflow-wrap:anywhere}
+
+.frep:hover{background:var(--tea)}
+.fchip .fcap{width:100%;min-width:0;font-family:var(--body);font-size:16px;line-height:1.4;padding:8px 10px;margin-top:4px;text-overflow:ellipsis;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink)}
+.comm{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;background:var(--paper);padding:4px 10px 4px 4px}
+.comm-a{flex:1;min-width:0;display:grid;gap:8px;padding:20px 22px;text-decoration:none;color:var(--ink)}
+.comm-a b{font-weight:500;font-size:16px;overflow-wrap:anywhere}
+.comm-a small{font-size:14px;color:var(--muted);line-height:1.6}
+a.comm-a:hover b{color:var(--coffee)}
+.fclear:hover{background:var(--khaki);color:var(--paper)}
+.field textarea{min-height:110px;resize:vertical;line-height:1.6}
+.sheet .foot{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.sheet .foot .spacer{flex:1}
+.btn.danger{border-color:var(--danger);color:var(--danger)}
+.btn.danger.armed{background:var(--danger);color:var(--paper)}
+.status{font-size:13px;color:var(--danger);min-height:1em}
+.status.ok{color:var(--coffee);font-weight:500}
+
+/* galleries & links */
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.thumb{display:grid;gap:4px;border:1px solid var(--line);border-radius:10px;background:var(--bg);padding:6px;cursor:zoom-in;text-align:left;min-width:0}
+.thumb img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:6px;background:var(--soft)}
+.thumb small{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pdf{display:flex;align-items:center;justify-content:center;aspect-ratio:3/4;border-radius:6px;background:var(--soft);font-family:var(--latin);font-size:22px;color:var(--coffee)}
+details.brand{background:var(--paper);border:1px solid var(--line);border-radius:14px}
+details.brand summary{cursor:pointer;list-style:none;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+details.brand summary::-webkit-details-marker{display:none}
+details.brand summary b{font-size:16px}
+details.brand .inner{padding:0 18px 18px;display:grid;gap:10px}
+.linklist{display:grid}
+.lrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 2px;border-bottom:1px solid var(--line);min-width:0}
+.lrow:last-child{border-bottom:0}
+.lrow a{text-decoration:none;flex:1;min-width:0}
+.lrow a b{display:block;color:var(--ink);font-weight:500}
+.lrow a small{color:var(--muted)}
+.kv{display:grid;grid-template-columns:auto 1fr auto;gap:6px 12px;align-items:center;font-size:14px}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;user-select:all;min-width:0;overflow-wrap:anywhere}
+.lightbox{position:fixed;inset:0;z-index:70;background:rgba(25,18,12,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+  padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.lightbox img{max-width:100%;max-height:82vh;object-fit:contain;border-radius:8px;background:#fff}
+.lightbox .cap{color:#F6EEE3;font-size:14px;text-align:center}
+.lightbox button{background:#F6EEE3;color:#3F2F25;border:0;border-radius:999px;padding:8px 18px;cursor:pointer}
+.files-ed{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.fchip{position:relative;border:1px solid var(--line);border-radius:8px;padding:4px;background:var(--bg);min-width:0}
+.fchip img,.fchip .pdf{width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px;font-size:16px}
+.fchip small{display:block;font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fchip button{position:absolute;top:2px;right:2px;width:24px;height:24px;border-radius:50%;border:0;background:var(--coffee);color:var(--paper);cursor:pointer;font-size:13px;line-height:1}
+.field input[type=file]{padding:8px;background:none;border-style:dashed}
+footer{text-align:center;padding-block:28px 40px;color:var(--muted);font-size:12px}
+footer b{font-family:var(--latin);letter-spacing:.24em;font-size:13px;display:block;color:var(--ink)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (max-width:560px){
+  .files-ed{grid-template-columns:1fr}
+  .fchip{display:grid;grid-template-columns:84px 1fr;grid-template-rows:auto auto;column-gap:10px;align-items:start;padding:6px 36px 6px 6px}
+  .fchip img,.fchip .pdf{grid-row:1/3;width:84px}
+  .fchip .fcap{margin-top:0;align-self:center}
+  .fchip .fcap+.fcap{margin-top:6px}
+}
+@media (max-width:560px){.fchip .frep{grid-column:2}}
+.fchip button.frep{position:static;display:block;width:100%;height:auto;margin-top:6px;border:1px dashed var(--khaki);background:var(--paper);color:var(--coffee);border-radius:8px;padding:8px 10px;font-size:14px;line-height:1.3;white-space:nowrap;writing-mode:horizontal-tb}
+.fchip button.frep:hover{background:var(--tea)}
+a.thumb{text-decoration:none;color:inherit}
+.thumb img,.lightbox img{-webkit-touch-callout:default;-webkit-user-select:auto;user-select:auto}
+.fno{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:6px;padding:6px 8px;border-radius:6px;background:var(--tea);color:var(--coffee);font-size:13px;font-weight:500;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+.fno .grip{font-size:15px;line-height:1;opacity:.75}
+.fchip.lift{opacity:.85;box-shadow:0 8px 24px rgba(60,40,25,.25);outline:2px solid var(--khaki);position:relative;z-index:2}
+.sorting .fno{cursor:grabbing}
+.sorting{user-select:none;-webkit-user-select:none}
+@media (max-width:560px){
+  .fchip img,.fchip .pdf{grid-column:1;grid-row:1/3}
+  .fchip .fno{grid-column:1;grid-row:3;margin-top:6px}
+  .fchip .fcap[data-capi]{grid-column:2;grid-row:1}
+  .fchip .fcap[data-veri]{grid-column:2;grid-row:2;margin-top:6px}
+  .fchip button.frep{grid-column:2;grid-row:3}
+}
+.pbtn{display:inline-flex;align-items:center;gap:4px;margin-top:6px;padding:6px 14px;border-radius:999px;background:var(--coffee);color:var(--paper);text-decoration:none;font-size:13px;line-height:1.3}
+.pbtn:hover{opacity:.9}
+.pcat{margin:8px 0 0;font-size:16px;color:var(--coffee)}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+@media (max-width:520px){.pgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}}
+.pcard{display:flex;flex-direction:column;background:var(--paper);border:1px solid var(--line);border-radius:14px;overflow:hidden;min-width:0}
+.pimg{position:relative;display:block;aspect-ratio:1;background:#fff}
+.pimg img{width:100%;height:100%;object-fit:cover;display:block;-webkit-touch-callout:default}
+.pnone{display:flex;align-items:center;justify-content:center;background:var(--soft);color:var(--khaki);font-family:var(--display);font-size:26px}
+.pmore{position:absolute;right:8px;bottom:8px;background:rgba(63,47,37,.75);color:#F6EEE3;font-size:11px;padding:2px 8px;border-radius:999px}
+.pbody{display:flex;flex-direction:column;gap:4px;padding:12px;flex:1;min-width:0}
+.pbody h4{margin:0;font-size:15px;line-height:1.45;overflow-wrap:anywhere}
+.pprice{font-family:var(--latin);font-size:18px;font-weight:600;color:var(--coffee);font-variant-numeric:tabular-nums}
+.pnote{margin:2px 0 0;font-size:13px;color:var(--muted);white-space:pre-line;line-height:1.6}
+.pbody .pbtn{margin-top:auto;align-self:flex-start}
+.pbody .acts{margin-top:6px}
+.hrow{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.faq-hero .hrow{justify-content:center}
+.sec-head .hrow .btn,.faq-hero .hrow .btn{font-size:12px;padding:4px 12px}
+.txtcopy{display:flex;justify-content:flex-end;margin:10px 0}
+.txtcopy .btn{background:var(--coffee);color:var(--paper);border-color:var(--coffee);padding:7px 16px}
+details.theory summary.sumrow{align-items:center;gap:10px}
+.sumrow .btn{margin-left:auto}
+.regsec{display:grid;gap:12px;border-top:1px solid var(--line);padding-top:26px;margin-top:8px}
+.regh{font-family:var(--display);font-weight:500;font-size:clamp(26px,7vw,34px);letter-spacing:.04em;margin:0 0 6px}
+body:not(.editing) .comm{padding:0}
+.hl-in{background:var(--paper)}
+.rwrap{display:grid;min-width:0}
+.racts{display:flex;gap:6px;flex-wrap:wrap}
+body:not(.editing) .racts{display:none}
+.rwrap{position:relative}
+.rwrap .racts{position:absolute;top:12px;right:12px;z-index:1}
+.rwrap .racts .btn{font-size:12px;padding:3px 10px;background:var(--paper)}
+/* ---- auth / members ---- */
+.gate{min-height:100vh;display:flex;align-items:center;justify-content:center;padding-block:32px;padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px))}
+.gate-card{width:100%;max-width:420px;background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:26px 22px;display:grid;gap:14px}
+.gate-card h1{font-size:26px;margin:0}
+.gate-card p{margin:0;color:var(--muted);font-size:14px;line-height:1.7}
+.gate-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--bg);border-radius:999px;padding:4px}
+.gate-tabs button{border:0;background:none;border-radius:999px;padding:9px;cursor:pointer;color:var(--muted)}
+.gate-tabs button[aria-pressed="true"]{background:var(--coffee);color:var(--paper)}
+.gate form{display:grid;gap:12px}
+.gate .field input{font:inherit;font-size:16px;width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
+.gate .cta{width:100%}
+.gbtn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border:1px solid var(--line);background:#fff;color:#3c3c3c;border-radius:999px;padding:11px;cursor:pointer;font-size:15px}
+.gate .msg{font-size:13px;color:var(--danger);min-height:1em}
+.gate .msg.ok{color:var(--coffee)}
+.gate .link{border:0;background:none;color:var(--coffee);text-decoration:underline;cursor:pointer;padding:0;font-size:13px;justify-self:start}
+.or{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px}
+.or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
+.who{font-size:12px;color:var(--muted);text-align:center}
+.mem{display:grid;gap:8px}
+.mrow{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:grid;gap:6px}
+.mrow .kv{grid-template-columns:auto 1fr auto}
+.mrow .kv dd{user-select:text}
+.mtag{display:inline-block;font-size:11px;padding:1px 9px;border-radius:999px;background:var(--tea)}
+.mtag.pending{background:#F3D9A4}.mtag.approved{background:#CFE3C7}.mtag.rejected,.mtag.disabled{background:#EBC9C0}
+.badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--danger);color:#fff;font-size:11px;font-weight:700;margin-left:4px}
+.logout{border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:5px 12px;font-size:12px;cursor:pointer;color:var(--muted)}
+.imgwait{background:var(--soft)}
+#imp-toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:80;background:var(--coffee);color:var(--paper);padding:12px 18px;border-radius:12px;font-size:14px;max-width:calc(100% - 32px);box-shadow:0 6px 20px rgba(0,0,0,.2)}
+</style>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4.4.1/dist/email.min.js"></script>
+</head>
+<body>
+<div class="gate" id="gate">
+  <div class="gate-card" id="gate-card"><p>載入中…</p></div>
+</div>
+<div id="appwrap" hidden>
+
+<div class="bar"><div class="wrap">
+  <button class="icon-btn" id="menu-btn" aria-label="開啟選單">☰</button>
+  <div class="brand"><b id="brand">WAX STUDIO</b><small>MY RESOURCES</small></div>
+  <button class="edit-toggle" id="edit-toggle" hidden>編輯</button>
+  <button class="home-link" data-go="home">首頁</button>
+</div>
+<div class="edit-banner" id="edit-banner" hidden>編輯模式中・點虛線按鈕修改或新增，完成後按「完成」</div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-label="選單">
+  <div class="top"><b style="font-family:var(--latin);letter-spacing:.14em" id="brand2">WAX STUDIO</b><button class="icon-btn" id="close-btn" aria-label="關閉選單">×</button></div>
+  <div class="lbl">EXPLORE ALL RESOURCES</div>
+  <nav id="drawer-nav"></nav>
+  <div class="foot"><div class="who" id="who" style="text-align:left;margin-bottom:8px"></div><button class="logout" id="logout-btn">登出</button></div>
+</aside>
+
+<main id="app"></main>
+<footer><b>WAX · STUDIO</b>MADE WITH CARE</footer>
+
+<div class="sheet" id="subsheet" hidden>
+  <div class="sheet-card" role="dialog" aria-modal="true" aria-labelledby="ss-title">
+    <div class="row"><h3 id="ss-title">管理小分類｜術後回家</h3><button class="icon-btn" id="ss-x" aria-label="關閉">×</button></div>
+    <div class="small">可以改名、調整順序、刪除或新增。改名後，原本在這個小分類的問題會跟著改；刪除後，那些問題會移到「其他」，不會被刪掉。</div>
+    <div id="ss-list" style="display:grid;gap:10px"></div>
+    <button type="button" class="btn add" id="ss-add">＋ 新增小分類</button>
+    <div class="status" id="ss-status"></div>
+    <div class="foot"><span class="spacer"></span><button type="button" class="btn" id="ss-cancel">取消</button><button type="button" class="cta" id="ss-save">儲存</button></div>
+  </div>
+</div>
+<div class="lightbox" id="lightbox" hidden><img id="lb-img" alt=""><div class="cap" id="lb-cap"></div><button type="button" id="lb-close">關閉</button></div>
+<div class="sheet" id="sheet" hidden>
+  <div class="sheet-card" role="dialog" aria-modal="true" aria-labelledby="sh-title">
+    <div class="row"><h3 id="sh-title">編輯</h3><button class="icon-btn" id="sh-x" aria-label="關閉">×</button></div>
+    <form id="sh-form"></form>
+    <div class="status" id="sh-status"></div>
+    <div class="foot">
+      <button type="button" class="btn danger" id="sh-del">刪除</button>
+      <span class="spacer"></span>
+      <button type="button" class="btn" id="sh-cancel">取消</button>
+      <button type="button" class="btn" id="sh-savenew">儲存並新增下一筆</button>
+      <button type="button" class="cta" id="sh-save">儲存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const CATS=["預約前","施作當下","術後回家"];
+let SUBS={"術後回家":["術後保養","皮膚反應","內生毛與去角質","回訪與再次除毛"]};
+const NOTE_PAGES=[["vendors","品牌與廠商採購"],["spaces","共享工作室"],["models","模特兒招募"],["biz","創業與社群經營"]];
+const O=["o","排序（數字小的排前面）","num"];
+const SCHEMA={
+ site:{name:"首頁文字",fields:[["brand","品牌名稱（英文）"],["title","首頁大標（按 Enter 換行）","area"],["lead","首頁介紹","area"],["quoteTitle","結語標題"],["quoteBody","結語內容","area"],["notice","使用說明","area"]]},
+ faq:{name:"問題",fields:[["c","分類","select",CATS],["sub","小分類","select",()=>[["","（不分小分類）"],...(SUBS["術後回家"]||[])]],["q","問題"],["a","給客人的白話回答","area"],["w","專業學理重點","area"],O]},
+ vendors:{name:"廠商",fields:[["where","放在哪一頁","select",[["vendors","品牌與廠商採購"],["tools","設備與工具清單｜耗材團購與醫材廠商"]]],["n","廠商名稱"],["t","簡介（例：老師平常叫貨的醫材廠商）","area"],["hl","重點提醒框（選填）","area"],["items","品項與折扣（一行一項，品項｜折扣）","area"],["note","叫貨備註（可換行，例：可少量叫貨、無最低叫貨量限制）","area"],["ship","運費（一行一條，例：7-11店到店運費60）","area"],["person","聯絡人"],["phone","電話"],["line","LINE ID"],["contact","其他聯絡方式（選填）"],["link","LINE 或官網連結（選填）"],["files","報價單圖片（選填）","files"],O]},
+ sitep:{name:"價目表區標題與說明",fields:[["priceTitle","標題"],["priceIntro","開頭說明","area"],["priceHl","重點提醒框（選填）","area"],["priceFoot","最下方小字（選填）","area"]]},
+ sites:{name:"醫材廠商區標題與說明",fields:[["supTitle","標題"],["supIntro","說明文字（清空就不顯示）","area"]]},
+ sitepr:{name:"商品列表標題與說明",fields:[["prodTitle","標題"],["prodIntro","說明文字（清空就不顯示）","area"]]},
+ sitefm:{name:"表單區標題與內容",fields:[["fmTitle","標題"],["fmIntro","說明文字（選填）","area"],["fmHl","重點提醒框（清空就不顯示）","area"]]},
+ sitehm:{name:"首頁結語與使用說明",fields:[["quoteTitle","結語標題"],["quoteBody","結語內容（可換行）","area"],["notice","使用說明內容","area"]]},
+ sitesp:{name:"共享工作室標題與說明",fields:[["spTitle","標題"],["spIntro","說明文字（清空就不顯示）","area"],["spHl","重點提醒框（選填）","area"]]},
+ sitec:{name:"社群區說明",fields:[["commTitle","標題"],["commIntro","說明文字","area"]]},
+ comms:{name:"社群",fields:[["name","社群名稱"],["link","連結"],["label","按鈕小字（選填，空白會自動判斷，例：前往 LINE 社群）"],O]},
+ sitev:{name:"廠商區下方說明",fields:[["vendorFoot","說明文字（顯示在叫貨廠商下方）","area"]]},
+ refs:{name:"折數參考表",fields:[["t","標題"],["intro","開頭說明","area"],["cols","表頭（用｜分隔，例：品牌｜折數參考）"],["rows","表格內容（一行一列，用｜分隔）","area"],["body","內文","area"],["hl","重點提醒框（選填）","area"],["foot","底部小字（選填）","area"],O]},
+ prices:{name:"品牌價目表",fields:[["brand","品牌名稱"],["files","價目表圖片（每張可填說明）","files"],O]},
+ groups:{name:"模特兒社團",fields:[["name","社團名稱"],["link","連結"],["note","說明（選填）"],O]},
+ pages:{name:"資源卡片",fields:[["t","卡片標題"],["d","卡片說明（例：IG・官方 LINE・經營工具）"],["m","卡片底部小字（選填）"],["en","頁面英文小標（選填，例：MY NOTES）"],["intro","頁面說明文字（選填）","area"],O]},
+ products:{name:"商品",fields:[["name","商品名稱"],["cat","分類","select",()=>[["","（不分類）"],...new Set(D.products.map(x=>x.cat).filter(Boolean))]],["newcat","或新增一個分類（選填，填了就放到新分類）"],["price","價格（選填，例：NT$1,280）"],["note","說明／使用心得（選填）","area"],["link","商品連結"],["linkLabel","按鈕文字（選填，預設「查看商品」）"],["files","商品圖片（選填，第 1 張當封面）","files"],O]},
+ tools:{name:"清單項目",fields:[["g","分類","select",()=>{const gs=[...new Set(D.tools.map(t=>t.g||"其他"))];return gs.length?gs:["基本設備"]}],["newg","或新增一個分類（選填，填了就放到新分類）"],["name","項目名稱"],["note","備註／使用心得（選填）","area"],["link","商品連結（選填）"],["linkLabel","按鈕文字（選填，預設「查看商品」）"],O]},
+ spaces:{name:"租借管道",fields:[["region","地區","select",()=>{const r=[...new Set(D.spaces.map(x=>x.region).filter(Boolean))];return r.length?r:["台北"]}],["newregion","或新增一個地區（選填，填了就放到新地區）"],["name","名稱"],["platform","類型","select",["Instagram","Facebook","LINE","官方網站","預約網站","其他"]],["link","連結"],["note","說明（選填）"],O]},
+ recruit:{name:"招募文案",fields:[["t","標題"],["d","說明"],["x","文案內容","area"],O]},
+ forms:{name:"表單",fields:[["t","標題"],["d","說明（選填）","area"],["files","圖片或 PDF（選填）","files"],["x","純文字內容（選填）","area"],O]},
+ notes:{name:"筆記",fields:[["page","放在哪一頁","select",()=>[...NOTE_PAGES,...D.pages.map(pg=>["pg_"+pg.id,pg.t])]],["t","標題"],["body","內容（一行一段）","area"],["hl","重點提醒框（選填）","area"],["link","連結（選填）"],["linkLabel","連結按鈕文字（選填）"],["files","圖片或 PDF（選填）","files"],O]}
+};
+const SITE_DEF={fmTitle:"表單使用說明",fmHl:"以下表單與衛教內容可以自行排版、加上自己的品牌 Logo，提供給自己的客人使用。",quoteTitle:"開始之後，這裡一直都在。",quoteBody:"從練習、接客，到建立自己的工作節奏。\n少一點摸索，多一點安心。",notice:"標示「範例」的內容是格式示範，請換成自己實際使用的資料。右上「編輯」可以修改所有內容。",spTitle:"全台美業時租工作室大全",spIntro:"依地區整理的時租空間與租借管道，也可以自己在 FB 社團或 IG 搜尋，加入後詢問能否租借。",supTitle:"耗材團購與醫材廠商",supIntro:"平常叫耗材的醫材行與團購管道。可上傳報價單，點圖放大查看。實際價格、庫存與配送條件請先向廠商確認。",prodTitle:"商品列表",prodIntro:"實際使用過的商品與購買連結，點圖片可放大。",commTitle:"熱蠟同行常用社群",priceIntro:"選擇品牌展開，點圖片即可開啟原尺寸，方便放大查閱。"};
+const COLS=["pages","products","faq","vendors","prices","refs","comms","tools","spaces","groups","recruit","forms","notes"];
+const D={},loaded={};COLS.forEach(c=>{D[c]=[];loaded[c]=false});
+let SITE={},DB=null,AS=null,dbState="loading",canEdit=false;
+
+const $=s=>document.querySelector(s);
+const URL=s=>{const m=String(s||"").match(/https?:\/\/[^\s"<>「」【】，。、]+/);return m?m[0]:""};
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const lines=s=>String(s??"").split("\n").map(x=>x.trim()).filter(Boolean);
+const byO=(a,b)=>(a.o??999)-(b.o??999);
+const store={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const copyBtn=(t,l="複製")=>`<button class="btn" data-copy="${esc(t)}">${l}</button>`;
+const back=(to="home",l="← 返回資源庫首頁")=>`<button class="back" data-go="${to}">${l}</button>`;
+const edBtn=(col,id)=>`<button class="btn ed" data-edit="${col}" data-id="${id}">✎ 編輯</button><button class="btn ed del" data-del="${col}" data-id="${id}">刪除</button>`;
+const addBtn=(col,label,preset)=>`<button class="btn ed add" data-edit="${col}" ${preset?`data-preset="${esc(JSON.stringify(preset))}"`:""}>＋ ${label}</button>`;
+const exTag=d=>d.ex?`<span class="tag">範例</span>`:"";
+const linkOut=u=>URL(u)?`<a href="${esc(URL(u))}" target="_blank" rel="noopener">開啟連結 ↗</a>`:"";
+const isPdf=f=>(f.type||"").includes("pdf");
+const gallery=(files,title,big)=>files&&files.length?`<div class="gal${big?" big":""}">${files.map((f,i)=>{const no=String(i+1).padStart(2,"0"),cap=f.cap?`${no}｜${esc(f.cap)}`:no;
+  return isPdf(f)
+  ?`<a class="thumb" href="#" data-imgh="${esc(f.id)}" target="_blank" rel="noopener"><span class="pdf">PDF</span><span class="tcap"><b>${f.cap?cap:esc(f.name||"PDF")}</b><small>${f.ver?esc(f.ver)+" · ":""}點擊開啟 PDF</small></span></a>`
+  :`<a class="thumb" href="#" data-imgh="${esc(f.id)}" target="_blank" rel="noopener" data-lb="${esc(f.id)}" data-cap="${esc((title?title+"｜":"")+no+(f.cap?"｜"+f.cap:""))}"><img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" data-img="${esc(f.id)}" alt="${esc(title||"")} ${esc(f.cap||no)}" loading="lazy"><span class="tcap"><b>${cap}</b><small>${f.ver?(big&&!/^原圖/.test(f.ver)?"原圖版本／日期：":"")+esc(f.ver)+" · ":big?"未標示版本／日期 · ":""}點圖開啟原尺寸</small></span></a>`}).join("")}</div>`:"";
+const kvRow=(k,v)=>v?`<dt>${k}</dt><dd>${esc(v)}</dd>${copyBtn(v,"複製")}`:"";
+const vendorCard=v=>`<div class="box"><div class="row"><h3>${esc(v.n)}</h3><div class="acts">${exTag(v)}${edBtn("vendors",v.id)}</div></div>
+   ${v.t?`<div class="small" style="white-space:pre-line">${esc(v.t)}</div>`:""}
+   ${v.hl?`<blockquote class="hl">${esc(v.hl)}</blockquote>`:""}
+   ${lines(v.items).length?`<div class="table-wrap"><table><thead><tr><th>品牌／品項</th><th>參考折扣</th></tr></thead><tbody>${lines(v.items).map(l=>{const [a,b]=l.split(/[｜|]/);return `<tr><td>${esc(a)}</td><td>${esc(b??"")}</td></tr>`}).join("")}</tbody></table></div>`:""}
+   ${v.note?`<p class="vnote">✏️${esc(v.note.trim())}</p>`:""}
+   ${lines(v.ship).length?`<div class="vship"><h4>🚛運費</h4><ul>${lines(v.ship).map(l=>`<li>${esc(l)}</li>`).join("")}</ul></div>`:""}
+   ${(v.person||v.phone||v.line||v.contact)?`<dl class="kv" style="margin:0">${kvRow("聯絡人",v.person)}${kvRow("電話",v.phone)}${kvRow("LINE ID",v.line)}${kvRow("聯絡",v.contact)}</dl>`:""}
+   ${URL(v.link)?`<div><a class="vbtn" href="${esc(URL(v.link))}" target="_blank" rel="noopener">聯絡${esc(v.n.replace(/(純淨保養|保養品?|醫材行|有限公司|公司)$/,"")||v.n)}${/line\.me|lin\.ee/i.test(URL(v.link))?" LINE":" ↗"}</a></div>`:""}
+   ${gallery(v.files,v.n)}</div>`;
+const refCard=r=>{const cols=(r.cols||"品牌｜折數參考").split(/[｜|]/);const rows=lines(r.rows).map(l=>l.split(/[｜|]/));
+  return `<section class="refsec"><div class="row"><h2>${esc(r.t)}</h2><span class="acts">${edBtn("refs",r.id)}</span></div>
+  ${r.intro?`<p class="small pl">${esc(r.intro)}</p>`:""}
+  ${rows.length?`<div class="table-wrap"><table class="reft"><thead><tr>${cols.map(c=>`<th>${esc(c)}</th>`).join("")}</tr></thead><tbody>${rows.map(rw=>`<tr>${cols.map((_,i)=>`<td>${esc(rw[i]??"")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`:""}
+  ${r.body?`<p class="pl" style="margin:0">${esc(r.body)}</p>`:""}
+  ${r.hl?`<blockquote class="hl">${esc(r.hl)}</blockquote>`:""}
+  ${r.foot?`<p class="small pl" style="margin:0">${esc(r.foot)}</p>`:""}</section>`};
+const prodCard=x=>{const f=(x.files||[]).find(f=>!isPdf(f));const n=(x.files||[]).length;
+  return `<article class="pcard">${f?`<a class="pimg" href="#" data-imgh="${esc(f.id)}" target="_blank" rel="noopener" data-lb="${esc(f.id)}" data-cap="${esc(x.name)}"><img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" data-img="${esc(f.id)}" alt="${esc(x.name)}" loading="lazy">${n>1?`<span class="pmore">${n} 張</span>`:""}</a>`:`<div class="pimg pnone">${esc((x.name||"").slice(0,2))}</div>`}
+  <div class="pbody"><h4>${esc(x.name)}</h4>${x.price?`<div class="pprice">${esc(x.price)}</div>`:""}${x.note?`<p class="pnote">${esc(x.note)}</p>`:""}
+  ${URL(x.link)?`<a class="pbtn" href="${esc(URL(x.link))}" target="_blank" rel="noopener">🛒 ${esc(x.linkLabel||"查看商品")} ↗</a>`:""}
+  <span class="acts">${edBtn("products",x.id)}</span></div></article>`};
+const HD={};
+const H=(key,en,t,p,cls="sec-head")=>{HD[key]=[t,p??""];const T=SITE["h_"+key+"_t"]||t,P=SITE["h_"+key+"_p"]??p;
+  return `<div class="${cls}"><div class="hrow"><div class="eyebrow">${en}</div><button class="btn ed" data-edit="sitehd" data-id="${key}">✎ 編輯標題與說明</button></div><h2>${esc(T)}</h2>${P?`<p class="pl">${esc(P)}</p>`:""}</div>`};
+const HS=(key,t,style="")=>{HD[key]=[t,null];return `<div class="hrow"${style?` style="${style}"`:""}><h3>${esc(SITE["h_"+key+"_t"]||t)}</h3><button class="btn ed" data-edit="sitehs" data-id="${key}">✎ 編輯標題</button></div>`};
+const head=(en,t,p)=>H(en.toLowerCase().replace(/[^a-z]/g,""),en,t,p);
+function hdDefaults(){const o={};for(const k in HD){o["h_"+k+"_t"]=HD[k][0];if(HD[k][1]!=null)o["h_"+k+"_p"]=HD[k][1]}RESB().forEach(r=>{o["c_"+r.id+"_t"]=r.t;o["c_"+r.id+"_d"]=r.d});return o}
+function emptyMsg(c){
+  
+  if(!loaded[c])return `<div class="empty">內容載入中…</div>`;
+  return `<div class="empty">還沒有內容。${canEdit?"按右上「編輯」開始新增。":""}</div>`;
+}
+const notesFor=(page,style)=>D.notes.filter(n=>n.page===page).map(n=>style==="list"
+  ?`<div class="box"><div class="row"><h3>${esc(n.t)}</h3>${edBtn("notes",n.id)}</div><ul class="clean">${lines(n.body).map(l=>`<li>${esc(l)}</li>`).join("")}</ul>${n.hl?`<blockquote class="hl">${esc(n.hl)}</blockquote>`:""}${noteExtra(n)}</div>`
+  :`<div class="tip"><div class="row"><h3>${esc(n.t)}</h3>${edBtn("notes",n.id)}</div>${lines(n.body).map(l=>`<p>${esc(l)}</p>`).join("")}${n.hl?`<blockquote class="hl hl-in">${esc(n.hl)}</blockquote>`:""}${noteExtra(n)}</div>`).join("");
+const noteExtra=n=>`${URL(n.link)?`<div><a class="pbtn" href="${esc(URL(n.link))}" target="_blank" rel="noopener">${esc(n.linkLabel||"開啟連結")} ↗</a></div>`:""}${gallery(n.files,n.t)}`;
+
+const RES=()=>RESB().map(r=>({...r,t:SITE["c_"+r.id+"_t"]||r.t,d:SITE["c_"+r.id+"_d"]||r.d})).concat(D.pages.map(pg=>({id:"p_"+pg.id,t:pg.t,d:pg.d||"",m:pg.m||`${D.notes.filter(n=>n.page==="pg_"+pg.id).length} 則內容`,nav:""})));
+const RESB=()=>[
+ {id:"faq",t:"客人常見Q&A",d:"白話回答・專業學理・一鍵複製",m:`${D.faq.length} 題完整收錄`,nav:`${D.faq.length} 題`},
+ {id:"vendors",t:"品牌與廠商採購",d:"品牌價目表・訂貨方式・聯絡資訊",m:`${D.prices.length} 品牌價目表 · ${D.vendors.length} 家廠商`,nav:"社群・廠商"},
+ {id:"tools",t:"設備與工具清單",d:"實際採購清單・商品・醫材廠商",m:`${D.tools.length} 項清單 · ${D.products.length} 項商品 · ${D.vendors.filter(v=>v.where==="tools").length} 家醫材廠商`,nav:"清單・醫材"},
+ {id:"spaces",t:"共享工作室",d:"地區・租金・提供設備",m:D.spaces.length?`${new Set(D.spaces.map(s=>s.region)).size} 個地區 · ${D.spaces.length} 個租借管道`:"內容建置中",nav:"全台租借管道"},
+ {id:"models",t:"模特兒招募",d:"社團資訊・招募文案",m:`${D.groups.length} 個社團連結 · ${D.recruit.length} 份文案`,nav:"社團・文案"},
+ {id:"forms",t:"接客實用表單",d:"諮詢紀錄・告知同意書",m:D.forms.length?`${D.forms.length} 份表單 · 圖片／PDF`:"內容建置中",nav:"表單"},
+ {id:"biz",t:"創業與社群經營",d:"IG・官方 LINE・經營工具",m:"經營筆記",nav:"筆記"}
+];
+
+const V={};
+V.home=()=>{
+  const title=SITE.title||"把學會的技術，\n變成前進的底氣。";
+  return `
+<section class="hero"><div class="wrap">
+  <div class="row"><div class="eyebrow">LEARN · CREATE · GROW</div>${`<button class="btn ed" data-edit="site">✎ 編輯首頁文字</button>`}</div>
+  <h1>${esc(title).replace(/\n/g,"<br>")}</h1>
+  <p>${esc(SITE.lead||"我的熱蠟工作室資源庫。從技術練習到真正開始接客與經營，把累積的經驗與資源整理在這裡，隨時回來查閱。")}</p>
+  <div class="ctas"><button class="cta" data-go="faq">查閱客人 FAQ →</button><button class="cta ghost" data-scroll="lib">探索所有資源</button></div>
+</div></section>
+<section class="sec" id="lib"><div class="wrap">
+  ${isAdmin&&MEMBERS.some(m=>m.status==="pending")?`<button class="notice" data-go="members" style="width:100%;text-align:left;cursor:pointer;margin-bottom:14px"><b>有 ${MEMBERS.filter(m=>m.status==="pending").length} 位新會員等待審核</b><p>點這裡前往會員管理 →</p></button>`:""}${H("library","YOUR RESOURCE LIBRARY","探索資源","每一步，都有可以回來查閱的方向。")}
+  <div class="cards">${RES().map((r,i)=>`<div class="rwrap"><button class="rcard" data-go="${r.id}"><span class="no">${String(i+1).padStart(2,"0")}</span><h3>${esc(r.t)}</h3><p>${esc(r.d)}</p><span class="meta">${esc(r.m)}</span></button>${/^p_/.test(r.id)?`<div class="racts">${edBtn("pages",r.id.slice(2))}</div>`:`<div class="racts"><button class="btn ed" data-edit="sitecard" data-id="${r.id}">✎ 編輯</button></div>`}</div>`).join("")}</div>
+  <div style="margin-top:12px">${addBtn("pages","新增卡片")}</div>
+</div></section>
+<section class="sec"><div class="wrap" style="display:grid;gap:14px"><div class="hrow"><span></span><button class="btn ed" data-edit="sitehm">✎ 編輯結語與使用說明</button></div>
+  <div class="quote"><b>${esc(SITE.quoteTitle||"開始之後，這裡一直都在。")}</b><p>${esc(SITE.quoteBody||"從練習、接客，到建立自己的工作節奏。\n少一點摸索，多一點安心。")}</p></div>
+  <div class="notice">${HS("notice","使用說明")}<p>${esc(SITE.notice||"標示「範例」的內容是格式示範，請換成自己實際使用的資料。")}</p></div>
+</div></section>`};
+
+let faqCat="全部",faqQ="",spReg="全台";
+V.faq=()=>`<div class="wrap view">
+  ${back()}
+  ${H("faq","CLIENT Q&A","客人常見 Q&A","把專業學理變成客人聽得懂的回答。搜尋問題，一鍵複製白話回覆。","faq-hero")}
+  <div class="searchbox"><input class="search" id="faq-q" type="search" placeholder="搜尋問題，例如：生理期、A酸、會痛嗎" aria-label="搜尋問題" value="${esc(faqQ)}"><button type="button" class="sclear" id="faq-clear" aria-label="清除搜尋" ${faqQ?"":"hidden"}>×</button></div>
+  <div class="chips" id="faq-cats">${["全部",...CATS].map(c=>`<button class="chip" data-c="${c}" aria-pressed="${c===faqCat}">${c==="全部"?"全部 FAQ":c}（${c==="全部"?D.faq.length:D.faq.filter(f=>f.c===c).length}）</button>`).join("")}</div>
+  <div class="row"><span class="small" id="faq-count"></span><span class="acts">${(faqCat==="全部"||SUBS[faqCat])?`<button class="btn ed" data-subs="1">管理小分類</button>`:""}${addBtn("faq","新增問題",faqCat!=="全部"?{c:faqCat}:null)}</span></div>
+  <div class="qlist" id="faq-list"></div>
+</div>`;
+function subRank(f){const l=SUBS[f.c];if(!l)return 0;const i=l.indexOf(f.sub);return i<0?l.length:i}
+function faqOrdered(){return [...CATS,null].flatMap(c=>D.faq.filter(f=>c?f.c===c:!CATS.includes(f.c)).sort((a,b)=>subRank(a)-subRank(b)||byO(a,b)))}
+function faqListHtml(list){
+  const grouped=faqCat==="全部";
+  const item=f=>`<button class="qitem" data-q="${f.id}"><span class="n">${String(f.i+1).padStart(2,"0")}</span><span class="t">${esc(f.q)}${grouped?"":`<br><span class="tag">${esc(f.sub&&SUBS[f.c]?f.sub:f.c)}</span>`}</span><span class="arrow">›</span></button>`;
+  const withSubs=(c,g)=>{const l=SUBS[c];if(!l||!g.some(f=>l.includes(f.sub)))return g.map(item).join("");
+    return [...l,""].map(sb=>{const h=g.filter(f=>(l.includes(f.sub)?f.sub:"")===sb);return h.length?`<div class="qsub">${esc(sb||"其他")}<span>${h.length}</span></div>`+h.map(item).join(""):""}).join("")};
+  if(!grouped)return CATS.includes(faqCat)?withSubs(faqCat,list):list.map(item).join("");
+  return [...CATS,"其他"].map((c,gi)=>{const g=list.filter(f=>(CATS.includes(f.c)?f.c:"其他")===c);return g.length?`<div class="qgroup"><span class="gn">${String(gi+1).padStart(2,"0")}</span><span class="gbar"></span><span>${esc(c)}</span></div>`+withSubs(c,g):""}).join("");
+}
+function renderFaqList(){
+  const list=faqOrdered().map((f,i)=>({...f,i})).filter(f=>(faqCat==="全部"||f.c===faqCat)&&(!faqQ||(f.q+f.a+f.w).includes(faqQ)));
+  $("#faq-count").textContent=`共 ${list.length} 題`;
+  $("#faq-list").innerHTML=faqListHtml(list)
+    ||(D.faq.length?`<div class="empty">找不到相關問題，換個關鍵字試試。</div>`:emptyMsg("faq"));
+}
+function initFaq(){
+  $("#faq-q").addEventListener("input",e=>{faqQ=e.target.value.trim();$("#faq-clear").hidden=!e.target.value;renderFaqList()});
+  $("#faq-clear").addEventListener("click",()=>{const q=$("#faq-q");q.value="";faqQ="";$("#faq-clear").hidden=true;renderFaqList();q.focus()});
+  $("#faq-cats").addEventListener("click",e=>{const b=e.target.closest("[data-c]");if(!b)return;faqCat=b.dataset.c;render()});
+  renderFaqList();
+}
+V.q=id=>{
+  const ord=faqOrdered(),i=ord.findIndex(f=>f.id===id);
+  if(i<0)return `<div class="wrap view">${back("faq","← 返回問題列表")}<div class="empty">${loaded.faq?"這題已經刪除了。":"內容載入中…"}</div></div>`;
+  const f=ord[i],p=ord[i-1],n=ord[i+1];
+  return `<div class="wrap view">
+    <div class="row">${back("faq","← 返回問題列表")}<span class="acts">${edBtn("faq",f.id).replace('<button class="btn ed del"',addBtn("faq","新增",{c:f.c,sub:f.sub||""})+'<button class="btn ed del"')}</span></div>
+    <div class="chips">${["全部",...CATS].map(c=>`<button class="chip" data-cgo="${c}" aria-pressed="${c===f.c}">${c==="全部"?"全部 FAQ":c}（${c==="全部"?D.faq.length:D.faq.filter(x=>x.c===c).length}）</button>`).join("")}</div>
+    <div class="qnav">${p?`<button class="btn" data-q="${p.id}">‹ 上一題</button>`:`<button class="btn" disabled>‹ 上一題</button>`}<span class="qpos">${String(i+1).padStart(2,"0")} / ${ord.length}</span>${n?`<button class="btn" data-q="${n.id}">下一題 ›</button>`:`<button class="btn" disabled>下一題 ›</button>`}</div>
+    <div><span class="tag">${esc(f.c)}${f.sub&&SUBS[f.c]?"・"+esc(f.sub):""}</span><h2 class="qtitle">${esc(f.q)}</h2></div>
+    <div class="answer">
+      ${HS("anslabel","♡ 給客人的白話回答")}
+      <p class="text">${esc(f.a)}</p>
+      <div>${copyBtn(f.a,"複製白話回答")}</div>
+      ${f.w?`<details class="theory"><summary>專業學理重點</summary><p>${esc(f.w)}</p></details>`:""}
+    </div>
+    <div class="row">${p?`<button class="btn" data-q="${p.id}">‹ 上一題</button>`:"<span></span>"}${n?`<button class="btn" data-q="${n.id}">下一題 ›</button>`:""}</div>
+  </div>`;
+};
+
+V.vendors=()=>`<div class="wrap view">${back()}
+ ${head("SUPPLIERS","品牌與廠商採購","實際叫貨的廠商、折扣與各品牌價目表。價格、庫存與運費以廠商當次報價為準。")}
+ <section class="refsec">
+  <div class="row"><h2>${esc(SITE.commTitle||"熱蠟同行常用社群")}</h2><button class="btn ed" data-edit="sitec">✎ 編輯社群區說明</button></div>
+  ${SITE.commIntro?`<p class="pl" style="margin:0">${esc(SITE.commIntro)}</p>`:""}
+  ${D.comms.map(c=>{const lab=c.label||(/line\.me|lin\.ee/i.test(URL(c.link))?"前往 LINE 社群":/facebook|fb\.com/i.test(URL(c.link))?"前往 Facebook 社團":/instagram/i.test(URL(c.link))?"前往 Instagram":"前往連結");
+    const inner=`<b>${esc(c.name)}</b><small>${esc(lab)}</small>`;
+    return `<div class="comm">${URL(c.link)?`<a class="comm-a" href="${esc(URL(c.link))}" target="_blank" rel="noopener">${inner}</a>`:`<span class="comm-a">${inner}</span>`}<span class="acts">${edBtn("comms",c.id)}</span></div>`}).join("")||`<div class="empty">還沒有社群連結。${canEdit?"按「編輯」新增。":""}</div>`}
+  ${addBtn("comms","新增社群")}
+ </section>
+ ${HS("vendorlist","實際叫貨廠商","margin-top:12px")}
+ ${D.vendors.filter(v=>v.where!=="tools").map(vendorCard).join("")||emptyMsg("vendors")}
+ ${addBtn("vendors","新增廠商")}
+ <div class="vfootrow">${SITE.vendorFoot?`<p class="vfoot">${esc(SITE.vendorFoot)}</p>`:""}<button class="btn ed" data-edit="sitev">✎ ${SITE.vendorFoot?"編輯":"新增"}廠商區說明</button></div>
+ ${D.refs.map(refCard).join("")}
+ ${addBtn("refs","新增折數參考表")}
+ ${notesFor("vendors")}
+ ${addBtn("notes","新增筆記",{page:"vendors"})}
+ <section class="refsec"><div class="row"><div class="sec-head" style="margin:0"><div class="eyebrow">PRICE LISTS</div><h2>${esc(SITE.priceTitle||"品牌官方價目表")}</h2></div><button class="btn ed" data-edit="sitep">✎ 編輯標題與說明</button></div>
+ <p class="pl" style="margin:0">${esc(SITE.priceIntro??"選擇品牌展開，點圖片即可開啟原尺寸，方便放大查閱。")}</p>
+ ${SITE.priceHl?`<blockquote class="hl">${esc(SITE.priceHl)}</blockquote>`:""}</section>
+ ${D.prices.map(p=>`<details class="brand"><summary><b>${esc(p.brand)}</b><span class="acts"><span class="tag">${(p.files||[]).length} 張</span>${edBtn("prices",p.id)}</span></summary><div class="inner">${gallery(p.files,p.brand,true)||`<div class="empty">還沒有上傳價目表圖片。</div>`}</div></details>`).join("")||emptyMsg("prices")}
+ ${addBtn("prices","新增品牌價目表")}
+ ${SITE.priceFoot?`<p class="small pl" style="margin:0">${esc(SITE.priceFoot)}</p>`:""}
+</div>`;
+
+V.tools=()=>{
+  const groups=[...new Set(D.tools.map(t=>t.g||"其他"))];
+  return `<div class="wrap view">${back()}
+ ${head("EQUIPMENT","設備與工具清單","勾選會記在這台裝置上，開店採購時對照用。")}
+ ${groups.map(g=>`<div class="box"><div class="hrow"><h3>${esc(g)}</h3><span class="acts"><button class="btn ed" data-edit="grp" data-id="${esc("tools::"+g)}">✎ 編輯分類</button>${addBtn("tools","新增項目",{g})}</span></div><div>${D.tools.filter(t=>(t.g||"其他")===g).map(t=>`<div class="check"><input type="checkbox" id="tk-${t.id}" data-k="${t.id}"><span><label for="tk-${t.id}">${esc(t.name)}</label>${t.note?`<small style="white-space:pre-line">${esc(t.note)}</small>`:""}${URL(t.link)?`<a class="pbtn" href="${esc(URL(t.link))}" target="_blank" rel="noopener">🛒 ${esc(t.linkLabel||"查看商品")} ↗</a>`:""}</span><span class="acts">${edBtn("tools",t.id)}</span></div>`).join("")}</div></div>`).join("")||emptyMsg("tools")}
+ ${addBtn("tools","新增項目")}
+ <div class="row"><span class="small" id="tool-count"></span><button class="btn" id="tool-reset">清除勾選</button></div>
+ <section class="refsec">
+  <div class="sec-head" style="margin:0"><div class="row"><div class="eyebrow">PRODUCTS</div><button class="btn ed" data-edit="sitepr">✎ 編輯標題與說明</button></div><h2>${esc(SITE.prodTitle||"商品列表")}</h2>${(SITE.prodIntro??"實際使用過的商品與購買連結，點圖片可放大。")?`<p class="pl">${esc(SITE.prodIntro??"實際使用過的商品與購買連結，點圖片可放大。")}</p>`:""}</div>
+  ${(()=>{if(!D.products.length)return loaded.products?`<div class="empty">還沒有商品。${canEdit?"按「編輯」後用「＋ 新增商品」加入。":""}</div>`:emptyMsg("products");
+    const cats=[...new Set(D.products.map(x=>x.cat||""))];const multi=cats.length>1||cats[0];
+    return cats.map(c=>`${multi?`<div class="hrow"><h3 class="pcat">${esc(c||"其他")}</h3><span class="acts">${c?`<button class="btn ed" data-edit="grp" data-id="${esc("products::"+c)}">✎ 編輯分類</button>`:""}${addBtn("products","新增商品",{cat:c})}</span></div>`:""}<div class="pgrid">${D.products.filter(x=>(x.cat||"")===c).map(prodCard).join("")}</div>`).join("")})()}
+  ${addBtn("products","新增商品")}
+ </section>
+ <div class="sec-head" style="margin:12px 0 0"><div class="row"><div class="eyebrow">SUPPLIES</div><button class="btn ed" data-edit="sites">✎ 編輯標題與說明</button></div><h2>${esc(SITE.supTitle||"耗材團購與醫材廠商")}</h2>${(SITE.supIntro??"平常叫耗材的醫材行與團購管道。可上傳報價單，點圖放大查看。實際價格、庫存與配送條件請先向廠商確認。")?`<p class="pl">${esc(SITE.supIntro??"平常叫耗材的醫材行與團購管道。可上傳報價單，點圖放大查看。實際價格、庫存與配送條件請先向廠商確認。")}</p>`:""}</div>
+ ${D.vendors.filter(v=>v.where==="tools").map(vendorCard).join("")||`<div class="empty">還沒有醫材廠商。${canEdit?"按「編輯」新增。":""}</div>`}
+ ${addBtn("vendors","新增醫材廠商",{where:"tools"})}
+</div>`};
+function initTools(){
+  const st=store.get("wax-tools",{});const boxes=[...document.querySelectorAll("[data-k]")];
+  const upd=()=>{$("#tool-count").textContent=`已備齊 ${boxes.filter(b=>b.checked).length} / ${boxes.length} 項`};
+  boxes.forEach(b=>{b.checked=!!st[b.dataset.k];b.addEventListener("change",()=>{st[b.dataset.k]=b.checked;store.set("wax-tools",st);upd()})});
+  $("#tool-reset").addEventListener("click",()=>{boxes.forEach(b=>b.checked=false);for(const k in st)delete st[k];store.set("wax-tools",st);upd()});upd();
+}
+
+V.spaces=()=>{const regions=[...new Set(D.spaces.map(x=>x.region||"其他"))].sort((a,b)=>(b==="全台")-(a==="全台"));if(spReg!=="全台"&&!regions.includes(spReg))spReg="全台";
+ const spIntro=SITE.spIntro??SITE_DEF.spIntro;
+ return `<div class="wrap view">${back()}
+ ${head("SHARED STUDIOS","共享工作室","地區・租金・提供設備")}
+ <section class="refsec">
+  <div class="hrow"><h2>${esc(SITE.spTitle||SITE_DEF.spTitle)}</h2><button class="btn ed" data-edit="sitesp">✎ 編輯標題與說明</button></div>
+  ${spIntro?`<p class="pl" style="margin:0">${esc(spIntro)}</p>`:""}
+  ${SITE.spHl?`<blockquote class="hl">${esc(SITE.spHl)}</blockquote>`:""}
+  ${regions.length?`<div class="chips">${["全台",...regions.filter(r=>r!=="全台")].map(r=>`<button class="chip" data-spr="${esc(r)}" aria-pressed="${r===spReg}">${esc(r)}</button>`).join("")}</div>`:""}
+ </section>
+ ${regions.filter(r=>spReg==="全台"||r===spReg).map(r=>`<section class="regsec"><div class="hrow"><h2 class="regh">${esc(r)}</h2><span class="acts"><button class="btn ed" data-edit="grp" data-id="${esc("spaces::"+r)}">✎ 編輯地區</button>${addBtn("spaces","新增租借管道",{region:r})}</span></div>${D.spaces.filter(x=>(x.region||"其他")===r).map(x=>{const sub=x.note||x.platform||"";const inner=`<b>${esc(x.name)}</b>${sub?`<small>${esc(sub)}</small>`:""}`;
+   return `<div class="comm">${URL(x.link)?`<a class="comm-a" href="${esc(URL(x.link))}" target="_blank" rel="noopener">${inner}</a>`:`<span class="comm-a">${inner}</span>`}<span class="acts">${exTag(x)}${edBtn("spaces",x.id)}</span></div>`}).join("")}</section>`).join("")||emptyMsg("spaces")}
+ ${addBtn("spaces","新增租借管道")}
+ ${notesFor("spaces")}
+ ${addBtn("notes","新增筆記",{page:"spaces"})}
+</div>`};
+
+V.models=()=>`<div class="wrap view">${back()}
+ ${head("MODEL CASTING","模特兒招募","發文社團與招募文案，複製後填妥空格並依實際內容調整。")}
+ <div class="box">${HS("groups","模特兒招募社團")}${D.groups.length?`<div class="linklist">${D.groups.map(g=>`<div class="lrow">${URL(g.link)?`<a href="${esc(URL(g.link))}" target="_blank" rel="noopener"><b>${esc(g.name)} ↗</b>${g.note?`<small>${esc(g.note)}</small>`:""}</a>`:`<span style="flex:1"><b>${esc(g.name)}</b></span>`}${edBtn("groups",g.id)}</div>`).join("")}</div>`:`<div class="small">還沒有社團連結。${canEdit?"按「編輯」新增。":""}</div>`}${addBtn("groups","新增社團")}</div>
+ ${HS("recruit","徵選模特文案")}
+ ${D.recruit.map(r=>`<div class="box"><div class="row"><h3>${esc(r.t)}</h3><div class="acts">${copyBtn(r.x,"複製招募文案")}${edBtn("recruit",r.id)}</div></div>${r.d?`<div class="small">${esc(r.d)}</div>`:""}<pre class="tpl">${esc(r.x)}</pre></div>`).join("")||emptyMsg("recruit")}
+ ${addBtn("recruit","新增文案")}
+ ${notesFor("models")}
+ ${addBtn("notes","新增筆記",{page:"models"})}
+</div>`;
+
+V.page=id=>{const pg=D.pages.find(x=>x.id===id);
+  if(!pg)return `<div class="wrap view">${back()}<div class="empty">${loaded.pages?"這張卡片已經刪除了。":"內容載入中…"}</div></div>`;
+  const key="pg_"+id;
+  return `<div class="wrap view">${back()}
+  <div class="sec-head"><div class="hrow"><div class="eyebrow">${esc(pg.en||"MY RESOURCES")}</div><span class="acts">${edBtn("pages",pg.id)}</span></div><h2>${esc(pg.t)}</h2>${pg.d?`<p>${esc(pg.d)}</p>`:""}</div>
+  ${pg.intro?`<p class="pl" style="margin:0">${esc(pg.intro)}</p>`:""}
+  ${notesFor(key)||`<div class="empty">還沒有內容。${canEdit?"按「編輯」後用「＋ 新增內容」加入文字、圖片或連結。":""}</div>`}
+  ${addBtn("notes","新增內容",{page:key})}
+ </div>`};
+V.forms=()=>`<div class="wrap view">${back()}
+ ${head("CLIENT FORMS","接客實用表單","諮詢紀錄・告知同意書")}
+ ${(()=>{const t=SITE.fmTitle||SITE_DEF.fmTitle,i=SITE.fmIntro??"",h=SITE.fmHl??SITE_DEF.fmHl;return `<section class="refsec">
+  <div class="hrow"><h2>${esc(t)}</h2><button class="btn ed" data-edit="sitefm">✎ 編輯標題與內容</button></div>
+  ${i?`<p class="pl" style="margin:0">${esc(i)}</p>`:""}
+  ${h?`<blockquote class="hl">${esc(h)}</blockquote>`:""}
+ </section>`})()}
+ <div class="refsec" style="padding-top:0"></div>
+ ${D.forms.map(f=>`<div class="box"><div class="row"><h3>${esc(f.t)}</h3><div class="acts">${edBtn("forms",f.id)}</div></div>
+   ${f.d?`<div class="small" style="white-space:pre-line">${esc(f.d)}</div>`:""}
+   ${gallery(f.files,f.t)}
+   ${f.x?`<details class="theory"><summary class="sumrow"><span>純文字版｜自行排版</span>${copyBtn(f.x,"複製文字")}</summary><pre class="tpl" style="margin-top:10px">${esc(f.x)}</pre><div class="txtcopy">${copyBtn(f.x,"一鍵複製文字")}</div></details>`:""}</div>`).join("")||emptyMsg("forms")}
+ ${addBtn("forms","新增表單")}
+</div>`;
+
+V.biz=()=>{const n=notesFor("biz","list");return `<div class="wrap view">${back()}
+ ${head("BUSINESS & SOCIAL","創業與社群經營","")}
+ ${n?`<div class="two">${n}</div>`:emptyMsg("notes")}
+ ${addBtn("notes","新增筆記",{page:"biz"})}
+</div>`};
+
+const inits={faq:initFaq,tools:initTools};
+let cur={v:"home"};
+function render(){
+  const y=window.scrollY;
+  $("#app").innerHTML=cur.v==="q"?V.q(cur.id):/^p_/.test(cur.v)?V.page(cur.v.slice(2)):V[cur.v]();
+  inits[cur.v]&&inits[cur.v]();
+  window.scrollTo(0,y);
+  const brand=SITE.brand||"WAX STUDIO";$("#brand").textContent=brand;$("#brand2").textContent=brand;
+  $("#drawer-nav").innerHTML=`<button data-go="home"><span>資源庫首頁</span><span>↗</span></button>`+(isAdmin?`<button data-go="members"><span>會員管理</span><span>${MEMBERS.filter(m=>m.status==="pending").length?`<span class="badge">${MEMBERS.filter(m=>m.status==="pending").length}</span>`:"管理者"}</span></button>`:"")+
+   RES().map(r=>`<button data-go="${r.id}"><span>${esc(r.t)}</span><span>${esc(r.nav)}</span></button>`+
+   (r.id==="faq"?CATS.map(c=>`<button class="sub-item" data-go="faq" data-cat="${c}"><span>${c}</span><span>${D.faq.filter(f=>f.c===c).length}</span></button>`).join(""):"")).join("");
+}
+function go(v,id){cur=id?{v,id}:{v:V[v]||/^p_/.test(v)?v:"home"};document.body.classList.remove("open");render();window.scrollTo(0,0)}
+
+/* ---- editor ---- */
+let ed=null;
+function openEditor(col,id,preset){
+  if(col==="sitehd")SCHEMA.sitehd={name:"標題與說明",fields:[["h_"+id+"_t","標題"],["h_"+id+"_p","說明文字（清空就不顯示）","area"]]};
+  if(col==="sitehs")SCHEMA.sitehs={name:"標題",fields:[["h_"+id+"_t","標題"]]};
+  if(col==="grp"){const gc=id.split("::")[0];SCHEMA.grp={name:gc==="spaces"?"地區":"分類",fields:[["gname",(gc==="spaces"?"地區":"分類")+"名稱（底下的項目會一起改）"]]}}
+  if(col==="sitecard")SCHEMA.sitecard={name:"卡片",fields:[["c_"+id+"_t","卡片標題"],["c_"+id+"_d","卡片說明"]]};
+  if(col==="sitecards")SCHEMA.sitecards={name:"首頁卡片標題與說明",fields:RESB().flatMap((r,i)=>[["c_"+r.id+"_t",`卡片 ${String(i+1).padStart(2,"0")} 標題`],["c_"+r.id+"_d",`卡片 ${String(i+1).padStart(2,"0")} 說明`]])};
+  const s=SCHEMA[col];
+  const old=col==="grp"?{gname:id.split("::").slice(1).join("::")}:/^site/.test(col)?{...SITE_DEF,...hdDefaults(),priceTitle:"品牌官方價目表",...SITE}:(id?D[col].find(d=>d.id===id):null)||{};
+  const vals={...(preset||{}),...old};
+  if(!id&&!/^site/.test(col)){const max=Math.max(0,...D[col].map(d=>+d.o||0));vals.o=max+1;if(col==="faq"&&!vals.c)vals.c=CATS[0];if(col==="notes"&&!vals.page)vals.page=cur.v==="home"?"biz":cur.v}
+  ed={col,id,old,files:((vals.files)||[]).map(f=>({...f})),uploading:0};
+  $("#sh-title").textContent=(id||/^site/.test(col)?"編輯":"新增")+s.name;
+  $("#sh-form").innerHTML=s.fields.map(([k,l,type,opts])=>{
+    const v=vals[k]??"",fid=`f-${k}`;
+    let input;
+    if(type==="area")input=`<textarea id="${fid}" name="${k}">${esc(v)}</textarea>`;
+    else if(type==="files"){input=`<div class="files-ed" id="${fid}"></div>${AS?`<input type="file" id="${fid}-in" accept="image/png,image/jpeg,image/webp,image/gif,application/pdf" multiple><input type="file" id="${fid}-rep" accept="image/png,image/jpeg,image/webp,image/gif,application/pdf" hidden>`:`<div class="small">上傳需要編輯權限。</div>`}`}
+    else if(type==="select")input=`<select id="${fid}" name="${k}">${(typeof opts==="function"?opts():opts).map(o=>{const [val,lab]=Array.isArray(o)?o:[o,o];return `<option value="${esc(val)}" ${val===v?"selected":""}>${esc(lab)}</option>`}).join("")}</select>`;
+    else input=`<input id="${fid}" name="${k}" type="${type==="num"?"number":"text"}" value="${esc(v)}" ${type==="num"?'inputmode="decimal" step="any"':""}>`;
+    const clr=(type!=="select"&&type!=="files")?`<button type="button" class="fclear" data-clr="${fid}" aria-label="清除內容" ${String(v)===""?"hidden":""}>×</button>`:"";
+    return `<div class="field"><label for="${fid}">${l}</label>${clr?`<div class="fwrap${type==="area"?" area":""}">${input}${clr}</div>`:input}</div>`;
+  }).join("");
+  $("#sh-del").hidden=!id||/^site/.test(col)||col==="grp";
+  $("#sh-del").classList.remove("armed");$("#sh-del").textContent="刪除";
+  $("#sh-status").textContent="";$("#sh-status").classList.remove("ok");$("#sh-save").disabled=false;
+  $("#sh-savenew").hidden=/^site/.test(col)||col==="grp";$("#sh-savenew").disabled=false;
+  if($("#f-files")){drawFiles();const fi=$("#f-files-in");fi&&fi.addEventListener("change",e=>uploadFiles([...e.target.files]));const fr=$("#f-files-rep");fr&&fr.addEventListener("change",e=>{const file=e.target.files[0];e.target.value="";if(file&&ed&&ed.repIdx!=null)replaceFile(ed.repIdx,file)})}
+  if(col==="faq"&&$("#f-sub")){const c=$("#f-c"),sf=$("#f-sub").closest(".field");const t=()=>{sf.hidden=!SUBS[c.value]};c.addEventListener("change",t);t()}
+  $("#sheet").hidden=false;
+  setTimeout(()=>{const f=$("#sh-form input,#sh-form textarea");f&&f.focus({preventScroll:true})},50);
+}
+document.addEventListener("input",e=>{const d=e.target.dataset||{};if(!ed)return;if(d.capi!=null&&ed.files[d.capi])ed.files[d.capi].cap=e.target.value;if(d.veri!=null&&ed.files[d.veri])ed.files[d.veri].ver=e.target.value});
+function drawFiles(){
+  $("#f-files").innerHTML=ed.files.map((f,i)=>`<div class="fchip">${isPdf(f)?`<span class="pdf">PDF</span>`:`<img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" data-img="${esc(f.id)}" alt="" draggable="false">`}<span class="fno" data-drag="${i}" title="按住拖曳可調整順序"><span class="grip" aria-hidden="true">⠿</span>第 ${i+1} 張</span><input class="fcap" data-capi="${i}" value="${esc(f.cap||"")}" placeholder="圖片說明" aria-label="第 ${i+1} 張說明"><input class="fcap" data-veri="${i}" value="${esc(f.ver||"")}" placeholder="原圖版本／日期（選填）" aria-label="第 ${i+1} 張版本"><button type="button" data-rmf="${i}" aria-label="移除">×</button>${AS?`<button type="button" class="frep" data-repf="${i}">${ed.replacing===i?"上傳中…":"更換圖片"}</button>`:""}</div>`).join("")+(ed.uploading?`<div class="small">上傳中… ${ed.uploading} 個</div>`:"");
+}
+/* drag to reorder images */
+let fdrag=null;
+document.addEventListener("pointerdown",e=>{
+  const h=e.target.closest("[data-drag]");if(!h||!ed||ed.uploading)return;
+  e.preventDefault();const el=h.closest(".fchip");
+  fdrag={i:+h.dataset.drag,el,id:e.pointerId};el.classList.add("lift");$("#f-files").classList.add("sorting");
+});
+document.addEventListener("pointermove",e=>{
+  if(!fdrag||e.pointerId!==fdrag.id)return;e.preventDefault();
+  const box=$("#f-files"),chips=[...box.querySelectorAll(".fchip")];
+  const t=chips.findIndex(c=>{const r=c.getBoundingClientRect();return e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom});
+  if(t>=0&&t!==fdrag.i){
+    const [m]=ed.files.splice(fdrag.i,1);ed.files.splice(t,0,m);
+    box.insertBefore(fdrag.el,t>fdrag.i?chips[t].nextSibling:chips[t]);fdrag.i=t;
+    [...box.querySelectorAll(".fchip")].forEach((c,k)=>{const n=c.querySelector(".fno");if(n)n.lastChild.textContent=`第 ${k+1} 張`});
+  }
+  const card=document.querySelector("#sheet .sheet-card"),r=card.getBoundingClientRect();
+  if(e.clientY<r.top+70)card.scrollTop-=12;else if(e.clientY>r.bottom-70)card.scrollTop+=12;
+},{passive:false});
+const endDrag=()=>{if(!fdrag)return;fdrag=null;$("#f-files").classList.remove("sorting");drawFiles()};
+document.addEventListener("pointerup",endDrag);document.addEventListener("pointercancel",endDrag);
+async function uploadFiles(list){
+  if(!AS)return;
+  for(const file of list){
+    ed.uploading++;drawFiles();
+    try{const r=await AS.upload(file,file.type?undefined:{type:/\.pdf$/i.test(file.name)?"application/pdf":"image/jpeg"});ed.files.push({id:r.id,name:file.name,type:r.contentType})}
+    catch(e){$("#sh-status").textContent=e&&e.code==="too_large"?`「${file.name}」超過 20MB，請壓縮後再上傳。`:e&&e.code==="unsupported_type"?`「${file.name}」格式不支援，請用 JPG、PNG 或 PDF。`:`「${file.name}」上傳失敗，請再試一次。`}
+    ed.uploading--;drawFiles();
+  }
+  $("#f-files-in").value="";
+}
+async function replaceFile(i,file){
+  if(!AS||!ed.files[i])return;
+  ed.replacing=i;ed.uploading++;drawFiles();
+  try{const r=await AS.upload(file,file.type?undefined:{type:/\.pdf$/i.test(file.name)?"application/pdf":"image/jpeg"});
+    const old=ed.files[i];ed.files[i]={...old,id:r.id,name:file.name,type:r.contentType};
+    $("#sh-status").classList.add("ok");$("#sh-status").textContent=`已更換第 ${i+1} 張，按「儲存」後生效。`}
+  catch(e){$("#sh-status").classList.remove("ok");$("#sh-status").textContent=e&&e.code==="too_large"?`「${file.name}」超過 20MB，請壓縮後再上傳。`:e&&e.code==="unsupported_type"?`「${file.name}」格式不支援，請用 JPG、PNG 或 PDF。`:`「${file.name}」上傳失敗，請再試一次。`}
+  ed.replacing=null;ed.uploading--;drawFiles();
+}
+document.addEventListener("click",e=>{const r=e.target.closest("[data-repf]");if(r&&ed&&ed.replacing==null){ed.repIdx=+r.dataset.repf;$("#f-files-rep").click()}});
+document.addEventListener("click",e=>{const b=e.target.closest("[data-rmf]");if(b&&ed){ed.files.splice(+b.dataset.rmf,1);drawFiles()}});
+function closeEditor(){$("#sheet").hidden=true;ed=null}
+/* keep 排序 numbers tidy: 1,2,3… within each group */
+const SCOPE={faq:"c",tools:"g",notes:"page",vendors:"where"};
+const ocmp=(a,b)=>(a.o??999)-(b.o??999)||(a.id<b.id?-1:a.id>b.id?1:0);
+const GRPF={tools:["g","其他"],spaces:["region","其他"],products:["cat",""]};
+async function renumber(col,item){
+  if(!DB||!D[col]||!SCHEMA[col]||!SCHEMA[col].fields.some(f=>f[0]==="o"))return;
+  const k=SCOPE[col],sc=v=>k?(v[k]||""):"";
+  const others=D[col].filter(d=>d.id!==item.id);
+  const groups=new Set(others.map(sc));if(!item._del)groups.add(sc(item));
+  for(const g of groups){
+    const list=others.filter(d=>sc(d)===g).sort(ocmp);
+    if(!item._del&&sc(item)===g){const p=Math.max(0,Math.min(list.length,Math.round(+item.o||list.length+1)-1));list.splice(p,0,item)}
+    for(let i=0;i<list.length;i++){if(list[i].o!==i+1)await DB.collection(col).doc(list[i].id).update({o:i+1})}
+  }
+}
+async function saveEditor(next){
+  if(!ed||!DB)return;
+  const vals={};
+  if(ed.uploading){$("#sh-status").textContent="檔案還在上傳，請稍等。";return}
+  SCHEMA[ed.col].fields.forEach(([k,,type])=>{if(type==="files"){vals[k]=ed.files;return}const el=$("#f-"+k);vals[k]=type==="num"?(parseFloat(el.value)||0):el.value.trim()});
+  if(ed.col==="faq"&&!SUBS[vals.c])vals.sub="";
+  {const nk={tools:["newg","g"],spaces:["newregion","region"],products:["newcat","cat"]}[ed.col];if(nk){if(vals[nk[0]])vals[nk[1]]=vals[nk[0]];delete vals[nk[0]]}}
+  if(ed.col==="grp"){
+    const nn=vals.gname;if(!nn){$("#sh-status").textContent="請填寫名稱。";return}
+    const [gc,...rest]=ed.id.split("::"),gv=rest.join("::"),[gf,fb]=GRPF[gc];
+    $("#sh-save").disabled=true;
+    try{for(const t of D[gc].filter(t=>(t[gf]||fb)===gv)){if(t[gf]!==nn)await DB.collection(gc).doc(t.id).update({[gf]:nn})}if(gc==="spaces"&&spReg===gv)spReg=nn;closeEditor()}
+    catch(e){$("#sh-save").disabled=false;$("#sh-status").textContent="儲存失敗，請檢查網路後再試一次。"}
+    return}
+  const req={pages:"t",products:"name",comms:"name",refs:"t",faq:"q",vendors:"n",prices:"brand",groups:"name",tools:"name",spaces:"name",recruit:"t",forms:"t",notes:"t"}[ed.col];
+  if(!/^site/.test(ed.col)&&!vals[req]){$("#sh-status").textContent="請先填寫「"+SCHEMA[ed.col].fields.find(f=>f[0]===req)[1]+"」。";return}
+  $("#sh-save").disabled=true;$("#sh-savenew").disabled=true;$("#sh-status").textContent="";$("#sh-status").classList.remove("ok");
+  try{
+    if(/^site/.test(ed.col))await DB.doc("site/main").set({...SITE,...vals});
+    else{
+      const {id:_,...rest}=ed.old||{};
+      const body={...rest,...vals,ex:false};
+      if(ed.id){await DB.collection(ed.col).doc(ed.id).set(body);renumber(ed.col,{...body,id:ed.id}).catch(()=>{});
+        const keep=new Set((vals.files||[]).map(f=>f.id));
+        if(AS&&ed.old&&ed.old.files)for(const f of ed.old.files)if(!keep.has(f.id))AS.delete(f.id).catch(()=>{});}
+      else{const ref=await DB.collection(ed.col).add(body);renumber(ed.col,{...body,id:ref.id}).catch(()=>{});if(ed.col==="faq"&&!next){closeEditor();go("q",ref.id);return}}
+    }
+    if(next){
+      const col=ed.col,keep={faq:["c","sub"],notes:["page"],vendors:["where"],tools:["g"],spaces:["region","platform"],prices:[],groups:[],recruit:[],forms:[]}[col]||[];
+      const preset={};keep.forEach(k=>{if(vals[k])preset[k]=vals[k]});
+      openEditor(col,null,preset);
+      const st=$("#sh-status");st.classList.add("ok");st.textContent="已儲存！可以繼續新增下一筆。";
+      return;
+    }
+    closeEditor();
+  }catch(e){$("#sh-save").disabled=false;$("#sh-savenew").disabled=false;$("#sh-status").textContent=e&&e.code==="quota_exceeded"?"資料量已達上限，請先刪除一些項目。":"儲存失敗，請檢查網路後再試一次。"}
+}
+async function deleteItem(){
+  const b=$("#sh-del");
+  if(!b.classList.contains("armed")){b.classList.add("armed");b.textContent="再按一次確認刪除";return}
+  try{const {col,id,old}=ed;await DB.collection(col).doc(id).delete();renumber(col,{id,_del:true}).catch(()=>{});if(AS&&old&&old.files)old.files.forEach(f=>AS.delete(f.id).catch(()=>{}));closeEditor();if(cur.v==="q"&&cur.id===id)go("faq");if(cur.v==="p_"+id)go("home")}
+  catch(e){$("#sh-status").textContent="刪除失敗，請稍後再試。"}
+}
+$("#sh-form").addEventListener("input",e=>{const b=document.querySelector(`[data-clr="${e.target.id}"]`);if(b)b.hidden=!e.target.value});
+$("#sh-form").addEventListener("click",e=>{const b=e.target.closest("[data-clr]");if(!b)return;const el=document.getElementById(b.dataset.clr);el.value="";b.hidden=true;el.focus()});
+$("#sh-save").addEventListener("click",()=>saveEditor(false));
+$("#sh-savenew").addEventListener("click",()=>saveEditor(true));
+$("#sh-del").addEventListener("click",deleteItem);
+$("#sh-cancel").addEventListener("click",closeEditor);
+$("#sh-x").addEventListener("click",closeEditor);
+$("#sheet").addEventListener("click",e=>{if(e.target.id==="sheet")closeEditor()});
+
+$("#edit-toggle").addEventListener("click",()=>{
+  const on=document.body.classList.toggle("editing");
+  $("#edit-toggle").textContent=on?"完成":"編輯";$("#edit-banner").hidden=!on;
+});
+
+
+/* ---- subcategory manager ---- */
+let SS=null;const SSCAT="術後回家";
+function openSubs(){
+  SS=(SUBS[SSCAT]||[]).map(n=>({orig:n,name:n,del:false}));
+  $("#ss-status").textContent="";$("#ss-save").disabled=false;drawSubs();$("#subsheet").hidden=false;
+}
+function drawSubs(){
+  $("#ss-list").innerHTML=SS.map((r,i)=>{const cnt=r.orig?D.faq.filter(f=>f.c===SSCAT&&f.sub===r.orig).length:0;
+    return `<div class="ssrow${r.del?" gone":""}">
+      <div class="ssord"><button type="button" class="btn" data-ssup="${i}" ${i===0?"disabled":""} aria-label="上移">↑</button><button type="button" class="btn" data-ssdn="${i}" ${i===SS.length-1?"disabled":""} aria-label="下移">↓</button></div>
+      <div class="fwrap"><input id="ss-${i}" data-ssi="${i}" value="${esc(r.name)}" placeholder="小分類名稱" ${r.del?"disabled":""}><button type="button" class="fclear" data-ssclr="${i}" aria-label="清除內容" ${r.name&&!r.del?"":"hidden"}>×</button></div>
+      <span class="small sscnt">${cnt} 題</span>
+      ${r.del?`<button type="button" class="btn" data-ssundo="${i}">復原</button>`:`<button type="button" class="btn del" data-ssdel="${i}">刪除</button>`}
+    </div>`}).join("")||`<div class="empty">目前沒有小分類。</div>`;
+}
+$("#ss-list").addEventListener("input",e=>{const i=e.target.dataset.ssi;if(i==null)return;SS[i].name=e.target.value;const b=document.querySelector(`[data-ssclr="${i}"]`);if(b)b.hidden=!e.target.value});
+$("#ss-list").addEventListener("click",e=>{
+  const t=e.target.closest("button");if(!t)return;const d=t.dataset;
+  if(d.ssclr!=null){SS[d.ssclr].name="";drawSubs();$("#ss-"+d.ssclr).focus();return}
+  if(d.ssdel!=null){if(!SS[d.ssdel].orig){SS.splice(d.ssdel,1)}else SS[d.ssdel].del=true;drawSubs();return}
+  if(d.ssundo!=null){SS[d.ssundo].del=false;drawSubs();return}
+  if(d.ssup!=null){const i=+d.ssup;[SS[i-1],SS[i]]=[SS[i],SS[i-1]];drawSubs();return}
+  if(d.ssdn!=null){const i=+d.ssdn;[SS[i+1],SS[i]]=[SS[i],SS[i+1]];drawSubs();return}
+});
+$("#ss-add").addEventListener("click",()=>{SS.push({orig:"",name:"",del:false});drawSubs();$("#ss-"+(SS.length-1)).focus()});
+const closeSubs=()=>{$("#subsheet").hidden=true;SS=null};
+$("#ss-cancel").addEventListener("click",closeSubs);$("#ss-x").addEventListener("click",closeSubs);
+$("#subsheet").addEventListener("click",e=>{if(e.target.id==="subsheet")closeSubs()});
+$("#ss-save").addEventListener("click",async()=>{
+  if(!DB)return;
+  const keep=SS.filter(r=>!r.del&&r.name.trim());
+  const names=keep.map(r=>r.name.trim());
+  if(new Set(names).size!==names.length){$("#ss-status").textContent="有重複的小分類名稱，請改成不同的名字。";return}
+  const map={};SS.forEach(r=>{if(r.orig)map[r.orig]=(!r.del&&r.name.trim())?r.name.trim():""});
+  $("#ss-save").disabled=true;$("#ss-status").textContent="";
+  try{
+    await DB.doc("config/subs").set({[SSCAT]:names});
+    for(const f of D.faq.filter(f=>f.c===SSCAT&&f.sub&&f.sub in map&&map[f.sub]!==f.sub)){await DB.collection("faq").doc(f.id).update({sub:map[f.sub]})}
+    closeSubs();
+  }catch(e){$("#ss-save").disabled=false;$("#ss-status").textContent="儲存失敗，請檢查網路後再試一次。"}
+});
+
+/* ---- events ---- */
+document.addEventListener("click",e=>{
+  const del=e.target.closest("[data-del]");
+  if(del){
+    if(!del.classList.contains("armed")){del.classList.add("armed");del.textContent="確定刪除？";clearTimeout(del._t);del._t=setTimeout(()=>{del.classList.remove("armed");del.textContent="刪除"},3000);return}
+    const col=del.dataset.del,id=del.dataset.id,old=D[col].find(d=>d.id===id);del.disabled=true;del.textContent="刪除中…";
+    DB.collection(col).doc(id).delete().then(()=>{renumber(col,{id,_del:true}).catch(()=>{});if(AS&&old&&old.files)old.files.forEach(f=>AS.delete(f.id).catch(()=>{}));if(cur.v==="q"&&cur.id===id)go("faq");if(cur.v==="p_"+id)go("home")}).catch(()=>{del.disabled=false;del.classList.remove("armed");del.textContent="刪除失敗"});
+    return}
+  const ebtn=e.target.closest("[data-edit]");
+  if(ebtn){openEditor(ebtn.dataset.edit,ebtn.dataset.id,ebtn.dataset.preset?JSON.parse(ebtn.dataset.preset):null);return}
+  const lb=e.target.closest("[data-lb]");if(lb){e.preventDefault();$("#lb-img").src="data:image/gif;base64,R0lGODlhAQABAAAAACw=";loadImg(lb.dataset.lb).then(u=>{if(u)$("#lb-img").src=u});$("#lb-cap").textContent=lb.dataset.cap||"";$("#lightbox").hidden=false;return}
+  if(e.target.id==="lightbox"||e.target.id==="lb-close"){$("#lightbox").hidden=true;return}
+  if(e.target.closest("[data-subs]")){openSubs();return}
+  const spr=e.target.closest("[data-spr]");if(spr){spReg=spr.dataset.spr;render();return}
+  const cg=e.target.closest("[data-cgo]");if(cg){faqCat=cg.dataset.cgo;faqQ="";go("faq");return}
+  const q=e.target.closest("[data-q]");if(q){go("q",q.dataset.q);return}
+  const g=e.target.closest("[data-go]");
+  if(g){if(g.dataset.cat){faqCat=g.dataset.cat;faqQ=""}else if(g.dataset.go==="faq"&&g.closest("#drawer-nav")){faqCat="全部"}go(g.dataset.go);return}
+  const sc=e.target.closest("[data-scroll]");if(sc){$("#"+sc.dataset.scroll).scrollIntoView({behavior:"smooth"});return}
+  const b=e.target.closest("[data-copy]");if(!b)return;e.preventDefault();
+  const t=b.dataset.copy,orig=b.textContent;
+  const ok=()=>{b.textContent="已複製";b.classList.add("done");setTimeout(()=>{b.textContent=orig;b.classList.remove("done")},1500)};
+  const fb=()=>{const ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");ok()}catch(_){b.textContent="請手動選取"}ta.remove()};
+  navigator.clipboard?navigator.clipboard.writeText(t).then(ok).catch(fb):fb();
+});
+["gesturestart","gesturechange","gestureend"].forEach(t=>document.addEventListener(t,e=>e.preventDefault(),{passive:false}));
+document.addEventListener("touchmove",e=>{if(e.touches&&e.touches.length>1)e.preventDefault()},{passive:false});
+$("#menu-btn").addEventListener("click",()=>document.body.classList.add("open"));
+$("#close-btn").addEventListener("click",()=>document.body.classList.remove("open"));
+$("#scrim").addEventListener("click",()=>document.body.classList.remove("open"));
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(!$("#subsheet").hidden)closeSubs();$("#lightbox").hidden=true;document.body.classList.remove("open");if(!$("#sheet").hidden)closeEditor()}});
+
+
+/* ---- Firebase ---- */
+const CFG={apiKey:"AIzaSyCDrt96U4MloPcpk90-t-CtwIZrvRXLX5c",authDomain:"wax-resources.firebaseapp.com",projectId:"wax-resources",storageBucket:"wax-resources.firebasestorage.app",messagingSenderId:"662423542379",appId:"1:662423542379:web:803d831d7e45309bdcef2e"};
+const SITE_ID="tonghang",SITE_NAME="熱蠟工作室-同行";
+const ADMIN_EMAILS=["paopaobeautystudio.booking@gmail.com"].map(e=>e.toLowerCase());
+const EMAILJS=null;
+firebase.initializeApp(CFG);
+const auth=firebase.auth(),fs=firebase.firestore();
+const P=p=>`sites/${SITE_ID}/${p}`;
+const isAdminUser=u=>!!u&&u.emailVerified&&ADMIN_EMAILS.includes((u.email||"").toLowerCase());
+let ME=null,MEMBER=null,isAdmin=false,unsubs=[],MEMBERS=[],booted=false;
+
+/* images stored as compressed data in Firestore */
+const IMGC=new Map();
+function dataToUrl(d){const [h,b64]=d.split(",");const mime=(h.match(/data:([^;]+)/)||[])[1]||"image/jpeg";const bin=atob(b64);const u8=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u8[i]=bin.charCodeAt(i);return window.URL.createObjectURL(new Blob([u8],{type:mime}))}
+function loadImg(id){if(!id)return Promise.resolve(null);if(IMGC.has(id))return IMGC.get(id);
+  const p=fs.doc(P("images/"+id)).get().then(s=>{const d=s.exists?s.data():null;if(!d||!d.data)return null;let str=d.data;
+    if(d.parts>1){return Promise.all(Array.from({length:d.parts-1},(_,i)=>fs.doc(P("images/"+id+"_p"+(i+1))).get())).then(ps=>{ps.forEach(x=>str+=x.exists?x.data().data:"");return dataToUrl(str)})}
+    return dataToUrl(str)}).catch(()=>null);
+  IMGC.set(id,p);return p}
+function hydrateImages(root){root=root||document;
+  root.querySelectorAll("img[data-img]").forEach(el=>{const id=el.dataset.img;el.classList.add("imgwait");loadImg(id).then(u=>{if(u&&el.dataset.img===id){el.src=u;el.classList.remove("imgwait")}})});
+  root.querySelectorAll("a[data-imgh]").forEach(el=>{const id=el.dataset.imgh;loadImg(id).then(u=>{if(u&&el.dataset.imgh===id)el.href=u})})}
+new MutationObserver(ms=>{for(const m of ms)for(const n of m.addedNodes)if(n.nodeType===1){if(n.matches&&(n.matches("img[data-img]")||n.matches("a[data-imgh]")))hydrateImages(n.parentNode);else if(n.querySelector&&n.querySelector("[data-img],[data-imgh]"))hydrateImages(n)}}).observe(document.body,{childList:true,subtree:true});
+document.addEventListener("click",e=>{const a=e.target.closest("a[data-imgh]");if(a&&!a.closest("[data-lb]")&&a.getAttribute("href")==="#"){e.preventDefault();loadImg(a.dataset.imgh).then(u=>{if(u)window.open(u,"_blank")})}});
+
+function readAsDataURL(blob){return new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=no;r.readAsDataURL(blob)})}
+async function compressImage(file){
+  if(/pdf/i.test(file.type)||/\.pdf$/i.test(file.name))return {data:await readAsDataURL(file),type:"application/pdf"};
+  const url=window.URL.createObjectURL(file);
+  const img=await new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=url});
+  let max=2000,q=0.82,out;
+  for(let t=0;t<8;t++){const sc=Math.min(1,max/Math.max(img.width,img.height));const c=document.createElement("canvas");c.width=Math.round(img.width*sc);c.height=Math.round(img.height*sc);
+    const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.drawImage(img,0,0,c.width,c.height);out=c.toDataURL("image/jpeg",q);
+    if(out.length<900000)break; if(q>0.6)q-=0.08;else max=Math.round(max*0.85)}
+  window.URL.revokeObjectURL(url);return {data:out,type:"image/jpeg"}}
+async function saveImageDoc(id,data,type,name){
+  const CH=900000;const parts=Math.ceil(data.length/CH);
+  await fs.doc(P("images/"+id)).set({data:data.slice(0,CH),type,name:name||"",parts,ts:firebase.firestore.FieldValue.serverTimestamp()});
+  for(let i=1;i<parts;i++)await fs.doc(P("images/"+id+"_p"+i)).set({data:data.slice(i*CH,(i+1)*CH)});
+}
+AS={
+  async upload(file){const {data,type}=await compressImage(file);if(type==="application/pdf"&&data.length>4500000){const e=new Error("too_large");e.code="too_large";throw e}
+    const id=fs.collection(P("images")).doc().id;await saveImageDoc(id,data,type,file.name);return {id,contentType:type}},
+  async delete(id){const s=await fs.doc(P("images/"+id)).get();const n=s.exists?(s.data().parts||1):1;await fs.doc(P("images/"+id)).delete();for(let i=1;i<n;i++)await fs.doc(P("images/"+id+"_p"+i)).delete();IMGC.delete(id)}
+};
+
+/* ---- gate screens ---- */
+const G=h=>{$("#gate-card").innerHTML=h;$("#gate").hidden=false;$("#appwrap").hidden=true};
+const gmsg=(t,ok)=>{const m=$("#g-msg");if(m){m.textContent=t;m.classList.toggle("ok",!!ok)}};
+const AUTHERR=c=>({"auth/invalid-email":"Email 格式不正確。","auth/missing-password":"請輸入密碼。","auth/weak-password":"密碼至少要 6 個字元。","auth/email-already-in-use":"這個 Email 已經註冊過了，請直接登入。","auth/invalid-credential":"Email 或密碼不正確。","auth/wrong-password":"Email 或密碼不正確。","auth/user-not-found":"找不到這個帳號，請先註冊。","auth/too-many-requests":"嘗試太多次，請稍後再試。","auth/popup-closed-by-user":"登入視窗已關閉。","auth/network-request-failed":"網路連線失敗，請檢查網路後再試。","auth/unauthorized-domain":"這個網址還沒加入 Firebase 的授權網域。"}[c]||"發生錯誤，請稍後再試。");
+let gateMode="login";
+function gateLogin(){
+  G(`<div class="eyebrow">MEMBERS ONLY</div><h1>${esc(SITE_NAME)}</h1><p>這是會員專屬的資源庫，請先登入。新朋友請註冊並送出申請，審核通過後就能瀏覽。</p>
+  <div class="gate-tabs"><button data-gm="login" aria-pressed="${gateMode==="login"}">登入</button><button data-gm="register" aria-pressed="${gateMode==="register"}">註冊</button></div>
+  <button class="gbtn" id="g-google"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>使用 Google 帳號${gateMode==="login"?"登入":"註冊"}</button>
+  <div class="or">或使用 Email</div>
+  <form id="g-form" novalidate>
+   <div class="field"><label for="g-email">Email</label><input id="g-email" type="email" autocomplete="email" required></div>
+   <div class="field"><label for="g-pw">密碼${gateMode==="register"?"（至少 6 個字元）":""}</label><input id="g-pw" type="password" autocomplete="${gateMode==="login"?"current-password":"new-password"}" required></div>
+   <button class="cta" type="submit">${gateMode==="login"?"登入":"註冊帳號"}</button>
+  </form>
+  ${gateMode==="login"?`<button class="link" id="g-forgot">忘記密碼？</button>`:""}
+  <div class="msg" id="g-msg"></div>`);
+}
+$("#gate").addEventListener("click",async e=>{
+  const t=e.target.closest("[data-gm]");if(t){gateMode=t.dataset.gm;gateLogin();return}
+  if(e.target.closest("#g-google")){try{await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())}catch(err){if(err.code==="auth/popup-blocked"||err.code==="auth/operation-not-supported-in-this-environment"){auth.signInWithRedirect(new firebase.auth.GoogleAuthProvider())}else gmsg(AUTHERR(err.code))}return}
+  if(e.target.closest("#g-forgot")){const em=$("#g-email").value.trim();if(!em){gmsg("請先在上面輸入 Email，再按忘記密碼。");return}try{await auth.sendPasswordResetEmail(em);gmsg("已寄出重設密碼信，請到信箱查看。",true)}catch(err){gmsg(AUTHERR(err.code))}return}
+  if(e.target.closest("#g-logout")){auth.signOut();return}
+  if(e.target.closest("#g-resend")){try{await ME.sendEmailVerification();gmsg("驗證信已重新寄出。",true)}catch(err){gmsg(AUTHERR(err.code))}return}
+  if(e.target.closest("#g-refresh")){await ME.reload();ME=auth.currentUser;await ME.getIdToken(true);onUser(ME);return}
+});
+$("#gate").addEventListener("submit",async e=>{
+  e.preventDefault();
+  if(e.target.id==="g-form"){const em=$("#g-email").value.trim(),pw=$("#g-pw").value;gmsg("");
+    try{if(gateMode==="login")await auth.signInWithEmailAndPassword(em,pw);else{const c=await auth.createUserWithEmailAndPassword(em,pw);c.user.sendEmailVerification().catch(()=>{})}}catch(err){gmsg(AUTHERR(err.code))}}
+  if(e.target.id==="g-apply"){
+    const v=k=>$("#a-"+k).value.trim();const d={name:v("name"),line:v("line"),phone:v("phone"),batch:v("batch")};
+    if(!d.name||!d.line||!d.phone||!d.batch){gmsg("每一欄都要填寫喔。");return}
+    const btn=e.target.querySelector("button[type=submit]");btn.disabled=true;
+    try{await fs.doc(P("members/"+ME.uid)).set({...d,email:ME.email||"",status:"pending",role:"viewer",createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+      notifyAdmin(d).catch(()=>{});onUser(ME)}
+    catch(err){btn.disabled=false;gmsg("送出失敗，請稍後再試。")}}
+});
+async function notifyAdmin(d){
+  if(!EMAILJS||!EMAILJS.serviceId||!EMAILJS.templateId||!EMAILJS.publicKey||!window.emailjs)return;
+  await emailjs.send(EMAILJS.serviceId,EMAILJS.templateId,{site_name:SITE_NAME,name:d.name,line_id:d.line,phone:d.phone,batch:d.batch,email:ME.email||"",site_url:location.href.split("#")[0],to_email:ADMIN_EMAILS[0]||""},{publicKey:EMAILJS.publicKey});
+}
+function gateApply(){
+  G(`<div class="eyebrow">APPLY</div><h1>申請加入</h1><p>${esc(SITE_NAME)} 為會員專屬內容。請填寫以下資料，送出後由管理者審核，通過後就能瀏覽。</p>
+  <form id="g-apply" novalidate>
+   <div class="field"><label for="a-name">姓名</label><input id="a-name" autocomplete="name" value="${esc(ME.displayName||"")}"></div>
+   <div class="field"><label for="a-line">LINE ID</label><input id="a-line"></div>
+   <div class="field"><label for="a-phone">手機</label><input id="a-phone" type="tel" inputmode="tel" autocomplete="tel"></div>
+   <div class="field"><label for="a-batch">學員期別</label><input id="a-batch" placeholder="例：第 3 期"></div>
+   <button class="cta" type="submit">送出申請</button>
+  </form><div class="msg" id="g-msg"></div>
+  <p class="who">目前登入：${esc(ME.email||"")}　<button class="link" id="g-logout">登出</button></p>`)}
+function gateStatus(st){
+  const T={pending:["審核中","已收到妳的申請，管理者審核通過後就能瀏覽內容。通過後重新整理這個頁面即可。"],rejected:["申請未通過","很抱歉，這次的申請沒有通過。如有疑問請直接聯繫管理者。"],disabled:["帳號已停用","這個帳號目前無法瀏覽內容，如有疑問請聯繫管理者。"]}[st]||["無法瀏覽","請聯繫管理者。"];
+  G(`<div class="eyebrow">MEMBERS ONLY</div><h1>${T[0]}</h1><p>${T[1]}</p>
+  ${st==="pending"?`<button class="cta" id="g-refresh">重新檢查</button>`:""}<div class="msg" id="g-msg"></div>
+  <p class="who">目前登入：${esc(ME.email||"")}　<button class="link" id="g-logout">登出</button></p>`)}
+function gateVerifyAdmin(){
+  G(`<div class="eyebrow">ADMIN</div><h1>請先驗證 Email</h1><p>管理者帳號需要先完成 Email 驗證。請到 ${esc(ME.email)} 的信箱點驗證連結，完成後按「我已驗證」。</p>
+  <button class="cta" id="g-refresh">我已驗證</button><button class="link" id="g-resend">重新寄送驗證信</button><div class="msg" id="g-msg"></div>
+  <p class="who"><button class="link" id="g-logout">登出</button></p>`)}
+
+function stopData(){unsubs.forEach(u=>{try{u()}catch(e){}});unsubs=[]}
+function startData(){
+  stopData();DB={collection:c=>fs.collection(P(c)),doc:p=>fs.doc(P(p))};dbState="ok";
+  COLS.forEach(c=>unsubs.push(DB.collection(c).onSnapshot(s=>{D[c]=s.docs.map(d=>({...d.data(),id:d.id})).sort(byO);loaded[c]=true;render()},()=>{loaded[c]=true;render()})));
+  unsubs.push(DB.doc("config/subs").onSnapshot(s=>{const d=s.exists?s.data():null;if(d&&Array.isArray(d["術後回家"]))SUBS={...SUBS,"術後回家":[...d["術後回家"]]};render()},()=>{}));
+  unsubs.push(DB.doc("site/main").onSnapshot(s=>{SITE=s.exists?{...s.data()}:{};render()},()=>{}));
+  if(isAdmin)unsubs.push(fs.collection(P("members")).onSnapshot(s=>{MEMBERS=s.docs.map(d=>({...d.data(),id:d.id}));render()},()=>{}));
+}
+function showApp(){
+  $("#gate").hidden=true;$("#appwrap").hidden=false;
+  canEdit=isAdmin||(MEMBER&&MEMBER.status==="approved"&&MEMBER.role==="editor");
+  $("#edit-toggle").hidden=!canEdit;
+  $("#who").textContent=(ME.email||"")+(isAdmin?"（管理者）":"");
+  startData();
+  if(!booted){booted=true;go((location.hash||"").slice(1)||"home")}else render();
+}
+let memberUnsub=null;
+async function onUser(u){
+  ME=u;if(memberUnsub){memberUnsub();memberUnsub=null}
+  if(!u){stopData();isAdmin=false;MEMBER=null;gateLogin();return}
+  if(ADMIN_EMAILS.includes((u.email||"").toLowerCase())){if(!u.emailVerified){gateVerifyAdmin();return}isAdmin=true;MEMBER=null;showApp();return}
+  isAdmin=false;G(`<p>載入中…</p>`);
+  memberUnsub=fs.doc(P("members/"+u.uid)).onSnapshot(s=>{
+    MEMBER=s.exists?s.data():null;
+    if(!MEMBER){stopData();gateApply();return}
+    if(MEMBER.status==="approved"){if($("#appwrap").hidden)showApp();else{canEdit=MEMBER.role==="editor";$("#edit-toggle").hidden=!canEdit;render()}}
+    else{stopData();gateStatus(MEMBER.status)}
+  },()=>{gateStatus("error")});
+}
+auth.getRedirectResult().catch(err=>{if(err&&err.code)setTimeout(()=>gmsg(AUTHERR(err.code)),300)});
+auth.onAuthStateChanged(onUser);
+$("#logout-btn").addEventListener("click",()=>{document.body.classList.remove("open");auth.signOut()});
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"){try{fs.disableNetwork().then(()=>fs.enableNetwork())}catch(e){}}});
+
+/* ---- member management (admin) ---- */
+const MST={pending:"待審核",approved:"已通過",rejected:"未通過",disabled:"已停用"};
+V.members=()=>{
+  if(!isAdmin)return `<div class="wrap view">${back()}<div class="empty">只有管理者可以查看。</div></div>`;
+  const ts=x=>x&&x.toDate?x.toDate().toLocaleString("zh-TW",{hour12:false}):"";
+  const grp=st=>MEMBERS.filter(m=>(m.status||"pending")===st).sort((a,b)=>((b.createdAt&&b.createdAt.seconds)||0)-((a.createdAt&&a.createdAt.seconds)||0));
+  const card=m=>`<div class="mrow"><div class="row"><b>${esc(m.name||"（未填姓名）")}</b><span class="acts"><span class="mtag ${esc(m.status)}">${MST[m.status]||m.status}</span>${m.role==="editor"?`<span class="mtag">編輯者</span>`:""}</span></div>
+   <dl class="kv" style="margin:0">${kvRow("Email",m.email)}${kvRow("LINE ID",m.line)}${kvRow("手機",m.phone)}${kvRow("學員期別",m.batch)}</dl>
+   <div class="small">申請時間：${esc(ts(m.createdAt))}</div>
+   <div class="acts">${m.status==="pending"?`<button class="cta" style="padding:7px 16px" data-mact="approve" data-id="${m.id}">通過</button><button class="btn del" data-mact="reject" data-id="${m.id}">拒絕</button>`:""}
+   ${m.status==="approved"?`<button class="btn" data-mact="${m.role==="editor"?"viewer":"editor"}" data-id="${m.id}">${m.role==="editor"?"取消編輯權限":"給予編輯權限"}</button><button class="btn del" data-mact="disable" data-id="${m.id}">停用</button>`:""}
+   ${(m.status==="rejected"||m.status==="disabled")?`<button class="btn" data-mact="approve" data-id="${m.id}">改為通過</button><button class="btn del" data-mact="remove" data-id="${m.id}">刪除申請</button>`:""}</div></div>`;
+  const sec=(st,t)=>{const l=grp(st);return `<h3 style="margin-top:8px">${t}（${l.length}）</h3>${l.length?`<div class="mem">${l.map(card).join("")}</div>`:`<div class="empty">目前沒有。</div>`}`};
+  return `<div class="wrap view">${back()}
+  <div class="sec-head"><div class="eyebrow">MEMBERS</div><h2>會員管理</h2><p>${esc(SITE_NAME)} 的會員名單。通過後對方重新整理頁面就能瀏覽；停用後馬上看不到內容。</p></div>
+  ${sec("pending","待審核")}${sec("approved","已通過")}${sec("rejected","未通過")}${sec("disabled","已停用")}
+  <div class="refsec"><h3>資料匯入</h3><p class="small" style="margin:0">搬家用：選擇 Claude 提供的匯入檔（.json），會把內容和圖片寫進這個網站。重複匯入會覆蓋同名項目。</p>
+   <input type="file" id="imp-file" accept="application/json,.json"></div>
+ </div>`};
+document.addEventListener("click",async e=>{
+  const b=e.target.closest("[data-mact]");if(!b||!isAdmin)return;
+  const id=b.dataset.id,a=b.dataset.mact,ref=fs.doc(P("members/"+id));
+  if(a==="remove"||a==="disable"||a==="reject"){if(!b.classList.contains("armed")){b.classList.add("armed");const t=b.textContent;b.textContent="再按一次確認";setTimeout(()=>{b.classList.remove("armed");b.textContent=t},3000);return}}
+  b.disabled=true;
+  try{if(a==="approve")await ref.update({status:"approved",reviewedAt:firebase.firestore.FieldValue.serverTimestamp()});
+    else if(a==="reject")await ref.update({status:"rejected",reviewedAt:firebase.firestore.FieldValue.serverTimestamp()});
+    else if(a==="disable")await ref.update({status:"disabled"});
+    else if(a==="editor"||a==="viewer")await ref.update({role:a});
+    else if(a==="remove")await ref.delete();}
+  catch(err){b.disabled=false;b.textContent="失敗，請再試"}
+});
+document.addEventListener("change",async e=>{
+  if(e.target.id!=="imp-file"||!isAdmin)return;const f=e.target.files[0];if(!f)return;let st=$("#imp-toast");if(!st){st=document.createElement("div");st.id="imp-toast";document.body.appendChild(st)}st.hidden=false;
+  try{st.textContent="讀取檔案中…";const J=JSON.parse(await f.text());if(J.site&&J.site!==SITE_ID){st.textContent=`這個檔案是給「${J.siteName||J.site}」的，請在對的網站匯入。`;return}
+    const docs=J.docs||[],imgs=J.images||[];let n=0;const tot=docs.length+imgs.length;
+    for(let i=0;i<docs.length;i+=400){const bt=fs.batch();docs.slice(i,i+400).forEach(d=>bt.set(fs.doc(P(d.path)),d.data));await bt.commit();n+=Math.min(400,docs.length-i);st.textContent=`匯入中… ${n}/${tot}`}
+    for(const im of imgs){await saveImageDoc(im.id,im.data,im.type,im.name);n++;st.textContent=`匯入中… ${n}/${tot}`}
+    st.textContent=`匯入完成：${docs.length} 筆內容、${imgs.length} 張圖片。`;setTimeout(()=>st.hidden=true,6000)}
+  catch(err){st.textContent="匯入失敗："+(err.message||err)}
+  e.target.value="";
+});
+</script>
+</div>
+</body>
+</html>
