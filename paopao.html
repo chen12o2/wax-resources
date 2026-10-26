@@ -363,6 +363,14 @@ body:not(.editing) .racts{display:none}
 <div class="gate" id="gate">
   <div class="gate-card" id="gate-card"><p>載入中…</p></div>
 </div>
+<script>
+(function(){var E=[];function esc(x){return String(x).replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c]})}
+function stuck(){var c=document.getElementById("gate-card"),a=document.getElementById("appwrap");return c&&(!a||a.hidden)&&/載入中/.test(c.textContent)?c:null}
+function show(t){var c=stuck();if(!c)return;c.innerHTML="<p>"+t+"</p>"+(E.length?'<p style="font-size:12px;word-break:break-all">'+E.map(esc).join("<br>")+"</p>":"")+'<button class="cta" onclick="location.reload()">重新整理</button>'}
+addEventListener("error",function(e){E.push((e.message||"")+(e.lineno?" @"+e.lineno:"")+(e.filename&&!/github\.io/.test(e.filename)?" "+e.filename:""));show("載入時發生錯誤，請截圖給管理者：")});
+addEventListener("unhandledrejection",function(e){var r=e.reason;E.push("P: "+(r&&(r.code||r.message)||r));show("載入時發生錯誤，請截圖給管理者：")});
+setTimeout(function(){show("載入太久了，可能是網路不穩。"+(window.firebase?"":"（Firebase 沒有載入成功）"))},15000)})();
+</script>
 <div id="appwrap" hidden>
 
 <div class="bar"><div class="wrap">
@@ -493,7 +501,34 @@ const gsort=(gc,list)=>{const o=SITE.gord||{};return list.map((g,i)=>[g,i]).sort
 const GL=gc=>gc==="tools"?gsort("tools",[...new Set(D.tools.map(t=>t.g||"其他"))]):gc==="products"?gsort("products",[...new Set(D.products.map(x=>x.cat||""))].filter(Boolean)):[];
 const IMG_URL=id=>loadImg(id);
 const dlName=(f,t,i,n)=>{const base=(t||"檔案").replace(/[｜|]/g,"-").replace(/[\\/:*?"<>]/g,"").trim()+(n>1?"-"+String(i+1).padStart(2,"0"):"");return base+(isPdf(f)?".pdf":".jpg")};
-const dlRow=f=>{const fs=f.files||[];return fs.length?`<div class="dlrow">${fs.map((x,i)=>`<button class="btn dl" data-dl="${esc(x.id)}" data-name="${esc(dlName(x,f.t,i,fs.length))}">⬇ 下載${isPdf(x)?"PDF":"圖片"}${fs.length>1?" "+String(i+1).padStart(2,"0"):""}</button>`).join("")}</div>`:""};
+const dlRow=f=>{const fs=f.files||[],imgs=fs.filter(x=>!isPdf(x));return fs.length?`<div class="dlrow">${imgs.length?`<button class="btn dl" data-pdf="${esc(f.id)}">⬇ 下載 PDF</button>`:""}${fs.map((x,i)=>`<button class="btn dl" data-dl="${esc(x.id)}" data-name="${esc(dlName(x,f.t,i,fs.length))}">⬇ 下載${isPdf(x)?"PDF":"圖片"}${fs.length>1?" "+String(i+1).padStart(2,"0"):""}</button>`).join("")}</div>`:""};
+const imgEl=u=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=u});
+function buildPdf(pages){/* pages: [{bytes:Uint8Array(jpeg),w,h}] -> Blob */
+  const enc=new TextEncoder(),parts=[],offs=[];let len=0;const put=x=>{const b=typeof x==="string"?enc.encode(x):x;parts.push(b);len+=b.length};
+  const n=pages.length,obj=(id,body)=>{offs[id]=len;put(id+" 0 obj\n");body();put("\nendobj\n")};
+  put("%PDF-1.4\n%\xE2\xE3\n");
+  obj(1,()=>put("<< /Type /Catalog /Pages 2 0 R >>"));
+  obj(2,()=>put(`<< /Type /Pages /Count ${n} /Kids [${pages.map((_,k)=>(3+k*3)+" 0 R").join(" ")}] >>`));
+  const PW=595.28,PH=841.89,M=20;
+  pages.forEach((pg,k)=>{const po=3+k*3,co=po+1,io=po+2,r=Math.min((PW-2*M)/pg.w,(PH-2*M)/pg.h),w=pg.w*r,h=pg.h*r,x=(PW-w)/2,y=(PH-h)/2;
+    obj(po,()=>put(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PW} ${PH}] /Resources << /XObject << /Im${k} ${io} 0 R >> >> /Contents ${co} 0 R >>`));
+    const cs=`q ${w.toFixed(2)} 0 0 ${h.toFixed(2)} ${x.toFixed(2)} ${y.toFixed(2)} cm /Im${k} Do Q`;
+    obj(co,()=>put(`<< /Length ${cs.length} >>\nstream\n${cs}\nendstream`));
+    obj(io,()=>{put(`<< /Type /XObject /Subtype /Image /Width ${pg.w} /Height ${pg.h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${pg.bytes.length} >>\nstream\n`);put(pg.bytes);put("\nendstream")})});
+  const total=3+n*3,xref=len;let x="xref\n0 "+total+"\n0000000000 65535 f \n";for(let k=1;k<total;k++)x+=String(offs[k]).padStart(10,"0")+" 00000 n \n";
+  put(x+`trailer\n<< /Size ${total} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`);
+  return new Blob(parts,{type:"application/pdf"})}
+const saveBlob=(blob,name)=>{const u=window.URL.createObjectURL(blob);const a=document.createElement("a");a.href=u;a.download=name;a.rel="noopener";document.body.appendChild(a);a.click();setTimeout(()=>{a.remove();window.URL.revokeObjectURL(u)},4000)};
+async function makePdf(btn){const f=D.forms.find(x=>x.id===btn.dataset.pdf);if(!f)return;const o=btn.textContent;btn.disabled=true;btn.textContent="製作 PDF 中…";
+  try{const pages=[];
+    for(const x of (f.files||[]).filter(x=>!isPdf(x))){const u=await IMG_URL(x.id);if(!u)continue;const im=await imgEl(u);
+      const sc=Math.min(1,2400/Math.max(im.naturalWidth,im.naturalHeight)),c=document.createElement("canvas");c.width=Math.round(im.naturalWidth*sc);c.height=Math.round(im.naturalHeight*sc);
+      const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.drawImage(im,0,0,c.width,c.height);
+      const b64=c.toDataURL("image/jpeg",0.9).split(",")[1],bin=atob(b64),bytes=new Uint8Array(bin.length);for(let k=0;k<bin.length;k++)bytes[k]=bin.charCodeAt(k);
+      pages.push({bytes,w:c.width,h:c.height})}
+    if(!pages.length)throw new Error("noimg");saveBlob(buildPdf(pages),dlName({type:"application/pdf"},f.t,0,1));btn.textContent=o}
+  catch(err){btn.textContent="下載失敗，請再試一次";setTimeout(()=>btn.textContent=o,2500)}
+  btn.disabled=false}
 const NUMC=i=>i<20?String.fromCharCode(0x2460+i):(i+1)+".";
 const BPAGES=()=>[["home","資源庫首頁"],...RES().map(r=>[r.id,r.t])];
 const blocksAt=(page,pos)=>D.blocks.filter(b=>(b.page||"tools")===page&&((b.pos||"mid")===pos||(page!=="tools"&&pos==="end"&&(b.pos||"mid")==="mid"))).map(b=>{const subs=D.bsubs.filter(x=>x.b===b.id);
@@ -964,6 +999,7 @@ document.addEventListener("click",e=>{
   const q=e.target.closest("[data-q]");if(q){go("q",q.dataset.q);return}
   const g=e.target.closest("[data-go]");
   if(g){if(g.dataset.cat){faqCat=g.dataset.cat;faqQ=""}else if(g.dataset.go==="faq"&&g.closest("#drawer-nav")){faqCat="全部"}go(g.dataset.go);return}
+  const pb=e.target.closest("[data-pdf]");if(pb){e.preventDefault();makePdf(pb);return}
   const dl=e.target.closest("[data-dl]");if(dl){e.preventDefault();const o=dl.textContent;dl.textContent="準備中…";IMG_URL(dl.dataset.dl).then(u=>{if(!u){dl.textContent="下載失敗";return}const a=document.createElement("a");a.href=u;a.download=dl.dataset.name;a.rel="noopener";document.body.appendChild(a);a.click();setTimeout(()=>a.remove(),1000);dl.textContent=o}).catch(()=>{dl.textContent="下載失敗"});return}
   const sc=e.target.closest("[data-scroll]");if(sc){$("#"+sc.dataset.scroll).scrollIntoView({behavior:"smooth"});return}
   const b=e.target.closest("[data-copy]");if(!b)return;e.preventDefault();
