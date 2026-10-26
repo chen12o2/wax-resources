@@ -125,6 +125,7 @@ pre.tpl{white-space:pre-wrap;font-family:var(--body);font-size:14px;background:v
 .chkcount{font-size:15px;color:var(--ink);padding-top:2px}
 .chkcount b{font-size:18px;color:var(--coffee)}
 .chkg{display:flex;align-items:center;gap:6px}
+.dlrow{display:flex;flex-wrap:wrap;gap:8px}
 .blk .bsub{display:grid;gap:10px;padding-top:14px;border-top:1px solid var(--line)}
 .blk .bsub h3{font-size:18px;margin:0}
 .gdesc{margin:10px 0 0;padding-top:10px;border-top:1px solid var(--line);font-size:13px;line-height:1.75;color:var(--muted);white-space:pre-line}
@@ -435,7 +436,7 @@ const SCHEMA={
  products:{name:"商品",fields:[["name","商品名稱"],["cat","分類","select",()=>[["","（不分類）"],...GL("products")]],["newcat","或新增一個分類（選填，填了就放到新分類）"],["price","價格（選填，例：NT$1,280）"],["note","說明／使用心得（選填）","area"],["link","商品連結"],["linkLabel","按鈕文字（選填，預設「查看商品」）"],["files","商品圖片（選填，第 1 張當封面）","files"],O]},
  tools:{name:"清單項目",fields:[["g","分類","select",()=>{const gs=GL("tools");return gs.length?gs:["基本設備"]}],["newg","或新增一個分類（選填，填了就放到新分類）"],["name","項目名稱"],["note","備註／使用心得（選填）","area"],["link","商品連結（選填）"],["linkLabel","按鈕文字（選填，預設「查看商品」）"],["files","款式參考圖片（選填，可多張，每張可填說明）","files"],O]},
  sitechk:{name:"開工準備清單標題與說明",fields:[["chkTitle","標題"],["chkIntro","說明文字（一行一段，清空就不顯示）","area"],["chkBtn","按鈕文字（清空就不顯示按鈕）"],["chkNote","勾選說明小字（清空就不顯示）","area"],["chkHl","清單最下方重點提醒框（選填，清空就不顯示）","area"]]},
- blocks:{name:"標題區塊",fields:[["pos","放在哪裡","select",[["top","開工準備清單上方"],["mid","清單下方、商品列表上方"],["end","頁面最下方（醫材廠商後）"]]],["t","大標題"],["intro","說明文字（一行一段，選填）","area"],["hl","重點提醒框（選填）","area"],["files","圖片（選填）","files"],O]},
+ blocks:{name:"標題區塊",fields:[["page","放在哪一頁","select",()=>BPAGES()],["pos","放在頁面哪裡","select",[["top","頁面上方（標題下面）"],["mid","設備與工具清單：清單下方、商品列表上方"],["end","頁面最下方"]]],["t","大標題"],["intro","說明文字（一行一段，選填）","area"],["hl","重點提醒框（選填）","area"],["files","圖片（選填）","files"],O]},
  bsubs:{name:"小標題段落",fields:[["b","放在哪個標題區塊","select",()=>D.blocks.map(x=>[x.id,x.t])],["t","小標題（會自動加上 ①②③ 編號）"],["body","內容（一行一段）","area"],["hl","重點提醒框（選填）","area"],["files","圖片（選填）","files"],O]},
  sitechkhl:{name:"清單最下方提醒框",fields:[["chkHl","提醒內容（清空就不顯示）","area"]]},
  spaces:{name:"租借管道",fields:[["region","地區","select",()=>{const r=[...new Set(D.spaces.map(x=>x.region).filter(Boolean))];return r.length?r:["台北"]}],["newregion","或新增一個地區（選填，填了就放到新地區）"],["name","名稱"],["platform","類型","select",["Instagram","Facebook","LINE","官方網站","預約網站","其他"]],["link","連結"],["note","說明（選填）"],O]},
@@ -490,14 +491,18 @@ const prodCard=x=>{const f=(x.files||[]).find(f=>!isPdf(f));const n=(x.files||[]
 const refImgs=t=>{const fs=(t.files||[]).filter(f=>!isPdf(f));return fs.length?`<div class="refimg">${fs.map(f=>`<a class="ri" href="#" data-imgh="${esc(f.id)}" target="_blank" rel="noopener" data-lb="${esc(f.id)}" data-cap="${esc(t.name+(f.cap?"｜"+f.cap:""))}"><span class="ri-box"><img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" data-img="${esc(f.id)}" alt="${esc(t.name)}" loading="lazy"></span><small>${esc(f.cap||"款式參考")}・點圖放大</small></a>`).join("")}</div>`:""};
 const gsort=(gc,list)=>{const o=SITE.gord||{};return list.map((g,i)=>[g,i]).sort((a,b)=>((o[gc+"::"+a[0]]??999)-(o[gc+"::"+b[0]]??999))||a[1]-b[1]).map(x=>x[0])};
 const GL=gc=>gc==="tools"?gsort("tools",[...new Set(D.tools.map(t=>t.g||"其他"))]):gc==="products"?gsort("products",[...new Set(D.products.map(x=>x.cat||""))].filter(Boolean)):[];
+const IMG_URL=id=>loadImg(id);
+const dlName=(f,t,i,n)=>{const base=(t||"檔案").replace(/[｜|]/g,"-").replace(/[\\/:*?"<>]/g,"").trim()+(n>1?"-"+String(i+1).padStart(2,"0"):"");return base+(isPdf(f)?".pdf":".jpg")};
+const dlRow=f=>{const fs=f.files||[];return fs.length?`<div class="dlrow">${fs.map((x,i)=>`<button class="btn dl" data-dl="${esc(x.id)}" data-name="${esc(dlName(x,f.t,i,fs.length))}">⬇ 下載${isPdf(x)?"PDF":"圖片"}${fs.length>1?" "+String(i+1).padStart(2,"0"):""}</button>`).join("")}</div>`:""};
 const NUMC=i=>i<20?String.fromCharCode(0x2460+i):(i+1)+".";
-const blocksAt=pos=>D.blocks.filter(b=>(b.pos||"mid")===pos).map(b=>{const subs=D.bsubs.filter(x=>x.b===b.id);
+const BPAGES=()=>[["home","資源庫首頁"],...RES().map(r=>[r.id,r.t])];
+const blocksAt=(page,pos)=>D.blocks.filter(b=>(b.page||"tools")===page&&((b.pos||"mid")===pos||(page!=="tools"&&pos==="end"&&(b.pos||"mid")==="mid"))).map(b=>{const subs=D.bsubs.filter(x=>x.b===b.id);
   return `<section class="refsec blk"><div class="hrow"><h2>${esc(b.t)}</h2><span class="acts">${edBtn("blocks",b.id)}</span></div>
   ${lines(b.intro).map(l=>`<p class="pl" style="margin:0">${esc(l)}</p>`).join("")}
   ${b.hl?`<blockquote class="hl">${esc(b.hl)}</blockquote>`:""}${gallery(b.files,b.t)}
   ${subs.map((x,i)=>`<div class="bsub"><div class="hrow"><h3 class="chkg"><span class="gno">${NUMC(i)}</span>${esc(x.t)}</h3><span class="acts">${edBtn("bsubs",x.id)}</span></div>
     ${lines(x.body).map(l=>`<p class="pl" style="margin:0">${esc(l)}</p>`).join("")}${x.hl?`<blockquote class="hl">${esc(x.hl)}</blockquote>`:""}${gallery(x.files,x.t)}</div>`).join("")}
-  <div>${addBtn("bsubs","新增小標題",{b:b.id})}</div></section>`}).join("")+`<div>${addBtn("blocks","新增標題區塊",{pos})}</div>`;
+  <div>${addBtn("bsubs","新增小標題",{b:b.id})}</div></section>`}).join("")+`<div>${addBtn("blocks","新增標題區塊",{page,pos})}</div>`;
 const HD={};
 const H=(key,en,t,p,cls="sec-head")=>{HD[key]=[t,p??""];const T=SITE["h_"+key+"_t"]||t,P=SITE["h_"+key+"_p"]??p;
   return `<div class="${cls}"><div class="hrow"><div class="eyebrow">${en}</div><button class="btn ed" data-edit="sitehd" data-id="${key}">✎ 編輯標題與說明</button></div><h2>${esc(T)}</h2>${P?`<p class="pl">${esc(P)}</p>`:""}</div>`};
@@ -535,11 +540,13 @@ V.home=()=>{
   <p>${esc(SITE.lead||"我的熱蠟工作室資源庫。從技術練習到真正開始接客與經營，把累積的經驗與資源整理在這裡，隨時回來查閱。")}</p>
   <div class="ctas"><button class="cta" data-go="faq">查閱客人 FAQ →</button><button class="cta ghost" data-scroll="lib">探索所有資源</button></div>
 </div></section>
+${D.blocks.some(b=>b.page==="home"&&b.pos==="top")||canEdit?`<section class="sec"><div class="wrap view" style="padding:0">${blocksAt("home","top")}</div></section>`:""}
 <section class="sec" id="lib"><div class="wrap">
   ${isAdmin&&MEMBERS.some(m=>m.status==="pending")?`<button class="notice" data-go="members" style="width:100%;text-align:left;cursor:pointer;margin-bottom:14px"><b>有 ${MEMBERS.filter(m=>m.status==="pending").length} 位新會員等待審核</b><p>點這裡前往會員管理 →</p></button>`:""}${H("library","YOUR RESOURCE LIBRARY","探索資源","每一步，都有可以回來查閱的方向。")}
   <div class="cards">${RES().map((r,i)=>`<div class="rwrap"><button class="rcard" data-go="${r.id}"><span class="no">${String(i+1).padStart(2,"0")}</span><h3>${esc(r.t)}</h3><p>${esc(r.d)}</p><span class="meta">${esc(r.m)}</span></button>${/^p_/.test(r.id)?`<div class="racts">${edBtn("pages",r.id.slice(2))}</div>`:`<div class="racts"><button class="btn ed" data-edit="sitecard" data-id="${r.id}">✎ 編輯</button></div>`}</div>`).join("")}</div>
   <div style="margin-top:12px">${addBtn("pages","新增卡片")}</div>
 </div></section>
+${D.blocks.some(b=>b.page==="home"&&b.pos!=="top")||canEdit?`<section class="sec"><div class="wrap view" style="padding:0">${blocksAt("home","end")}</div></section>`:""}
 <section class="sec"><div class="wrap" style="display:grid;gap:14px"><div class="hrow"><span></span><button class="btn ed" data-edit="sitehm">✎ 編輯結語與使用說明</button></div>
   <div class="quote"><b>${esc(SITE.quoteTitle||"開始之後，這裡一直都在。")}</b><p>${esc(SITE.quoteBody||"從練習、接客，到建立自己的工作節奏。\n少一點摸索，多一點安心。")}</p></div>
   <div class="notice">${HS("notice","使用說明")}<p>${esc(SITE.notice||"標示「範例」的內容是格式示範，請換成自己實際使用的資料。")}</p></div>
@@ -549,10 +556,12 @@ let faqCat="全部",faqQ="",spReg="全台";
 V.faq=()=>`<div class="wrap view">
   ${back()}
   ${H("faq","CLIENT Q&A","客人常見 Q&A","把專業學理變成客人聽得懂的回答。搜尋問題，一鍵複製白話回覆。","faq-hero")}
+  ${blocksAt("faq","top")}
   <div class="searchbox"><input class="search" id="faq-q" type="search" placeholder="搜尋問題，例如：生理期、A酸、會痛嗎" aria-label="搜尋問題" value="${esc(faqQ)}"><button type="button" class="sclear" id="faq-clear" aria-label="清除搜尋" ${faqQ?"":"hidden"}>×</button></div>
   <div class="chips" id="faq-cats">${["全部",...CATS].map(c=>`<button class="chip" data-c="${c}" aria-pressed="${c===faqCat}">${c==="全部"?"全部 FAQ":c}（${c==="全部"?D.faq.length:D.faq.filter(f=>f.c===c).length}）</button>`).join("")}</div>
   <div class="row"><span class="small" id="faq-count"></span><span class="acts">${(faqCat==="全部"||SUBS[faqCat])?`<button class="btn ed" data-subs="1">管理小分類</button>`:""}${addBtn("faq","新增問題",faqCat!=="全部"?{c:faqCat}:null)}</span></div>
   <div class="qlist" id="faq-list"></div>
+  ${blocksAt("faq","end")}
 </div>`;
 function subRank(f){const l=SUBS[f.c];if(!l)return 0;const i=l.indexOf(f.sub);return i<0?l.length:i}
 function faqOrdered(){return [...CATS,null].flatMap(c=>D.faq.filter(f=>c?f.c===c:!CATS.includes(f.c)).sort((a,b)=>subRank(a)-subRank(b)||byO(a,b)))}
@@ -597,6 +606,7 @@ V.q=id=>{
 
 V.vendors=()=>`<div class="wrap view">${back()}
  ${head("SUPPLIERS","品牌與廠商採購","實際叫貨的廠商、折扣與各品牌價目表。價格、庫存與運費以廠商當次報價為準。")}
+ ${blocksAt("vendors","top")}
  <section class="refsec">
   <div class="row"><h2>${esc(SITE.commTitle||"熱蠟同行常用社群")}</h2><button class="btn ed" data-edit="sitec">✎ 編輯社群區說明</button></div>
   ${SITE.commIntro?`<p class="pl" style="margin:0">${esc(SITE.commIntro)}</p>`:""}
@@ -619,13 +629,14 @@ V.vendors=()=>`<div class="wrap view">${back()}
  ${D.prices.map(p=>`<details class="brand"><summary><b>${esc(p.brand)}</b><span class="acts"><span class="tag">${(p.files||[]).length} 張</span>${edBtn("prices",p.id)}</span></summary><div class="inner">${gallery(p.files,p.brand,true)||`<div class="empty">還沒有上傳價目表圖片。</div>`}</div></details>`).join("")||emptyMsg("prices")}
  ${addBtn("prices","新增品牌價目表")}
  ${SITE.priceFoot?`<p class="small pl" style="margin:0">${esc(SITE.priceFoot)}</p>`:""}
+ ${blocksAt("vendors","end")}
 </div>`;
 
 V.tools=()=>{
   const groups=GL("tools");
   return `<div class="wrap view">${back()}
  ${head("EQUIPMENT","設備與工具清單","開工準備清單・商品連結・醫材廠商")}
- ${blocksAt("top")}
+ ${blocksAt("tools","top")}
  ${(()=>{const t=SITE.chkTitle||SITE_DEF.chkTitle,ii=SITE.chkIntro??SITE_DEF.chkIntro,bt=SITE.chkBtn??SITE_DEF.chkBtn,nt=SITE.chkNote??SITE_DEF.chkNote;
    return `<section class="refsec chkhead"><div class="hrow"><h2>${esc(t)}</h2><button class="btn ed" data-edit="sitechk">✎ 編輯標題與說明</button></div>
    ${lines(ii).map(l=>`<p class="pl" style="margin:0">${esc(l)}</p>`).join("")}
@@ -636,7 +647,7 @@ V.tools=()=>{
  ${D.tools.length?`<div class="hrow chkhlrow"><span></span><button class="btn ed" data-edit="sitechkhl">✎ ${SITE.chkHl?"編輯":"新增"}最下方提醒框</button></div>${SITE.chkHl?`<blockquote class="hl">${esc(SITE.chkHl)}</blockquote>`:""}`:""}
  ${addBtn("tools","新增項目")}
  <div class="row"><span></span><button class="btn" id="tool-reset">清除勾選</button></div>
- ${blocksAt("mid")}
+ ${blocksAt("tools","mid")}
  <section class="refsec" id="prods">
   <div class="sec-head" style="margin:0"><div class="row"><div class="eyebrow">PRODUCTS</div><button class="btn ed" data-edit="sitepr">✎ 編輯標題與說明</button></div><h2>${esc(SITE.prodTitle||"商品列表")}</h2>${(SITE.prodIntro??"實際使用過的商品與購買連結，點圖片可放大。")?`<p class="pl">${esc(SITE.prodIntro??"實際使用過的商品與購買連結，點圖片可放大。")}</p>`:""}</div>
   ${(()=>{if(!D.products.length)return loaded.products?`<div class="empty">還沒有商品。${canEdit?"按「編輯」後用「＋ 新增商品」加入。":""}</div>`:emptyMsg("products");
@@ -647,7 +658,7 @@ V.tools=()=>{
  <div class="sec-head" style="margin:12px 0 0"><div class="row"><div class="eyebrow">SUPPLIES</div><button class="btn ed" data-edit="sites">✎ 編輯標題與說明</button></div><h2>${esc(SITE.supTitle||"耗材團購與醫材廠商")}</h2>${(SITE.supIntro??"平常叫耗材的醫材行與團購管道。可上傳報價單，點圖放大查看。實際價格、庫存與配送條件請先向廠商確認。")?`<p class="pl">${esc(SITE.supIntro??"平常叫耗材的醫材行與團購管道。可上傳報價單，點圖放大查看。實際價格、庫存與配送條件請先向廠商確認。")}</p>`:""}</div>
  ${D.vendors.filter(v=>v.where==="tools").map(vendorCard).join("")||`<div class="empty">還沒有醫材廠商。${canEdit?"按「編輯」新增。":""}</div>`}
  ${addBtn("vendors","新增醫材廠商",{where:"tools"})}
- ${blocksAt("end")}
+ ${blocksAt("tools","end")}
 </div>`};
 function initTools(){
   const st=store.get("wax-tools",{});const boxes=[...document.querySelectorAll("[data-k]")];
@@ -660,6 +671,7 @@ V.spaces=()=>{const regions=[...new Set(D.spaces.map(x=>x.region||"其他"))].so
  const spIntro=SITE.spIntro??SITE_DEF.spIntro;
  return `<div class="wrap view">${back()}
  ${head("SHARED STUDIOS","共享工作室","地區・租金・提供設備")}
+ ${blocksAt("spaces","top")}
  <section class="refsec">
   <div class="hrow"><h2>${esc(SITE.spTitle||SITE_DEF.spTitle)}</h2><button class="btn ed" data-edit="sitesp">✎ 編輯標題與說明</button></div>
   ${spIntro?`<p class="pl" style="margin:0">${esc(spIntro)}</p>`:""}
@@ -671,16 +683,19 @@ V.spaces=()=>{const regions=[...new Set(D.spaces.map(x=>x.region||"其他"))].so
  ${addBtn("spaces","新增租借管道")}
  ${notesFor("spaces")}
  ${addBtn("notes","新增筆記",{page:"spaces"})}
+ ${blocksAt("spaces","end")}
 </div>`};
 
 V.models=()=>`<div class="wrap view">${back()}
  ${head("MODEL CASTING","模特兒招募","發文社團與招募文案，複製後填妥空格並依實際內容調整。")}
+ ${blocksAt("models","top")}
  <div class="box">${HS("groups","模特兒招募社團")}${D.groups.length?`<div class="linklist">${D.groups.map(g=>`<div class="lrow">${URL(g.link)?`<a href="${esc(URL(g.link))}" target="_blank" rel="noopener"><b>${esc(g.name)} ↗</b>${g.note?`<small>${esc(g.note)}</small>`:""}</a>`:`<span style="flex:1"><b>${esc(g.name)}</b></span>`}${edBtn("groups",g.id)}</div>`).join("")}</div>`:`<div class="small">還沒有社團連結。${canEdit?"按「編輯」新增。":""}</div>`}${addBtn("groups","新增社團")}</div>
  ${HS("recruit","徵選模特文案")}
  ${D.recruit.map(r=>`<div class="box"><div class="row"><h3>${esc(r.t)}</h3><div class="acts">${copyBtn(r.x,"複製招募文案")}${edBtn("recruit",r.id)}</div></div>${r.d?`<div class="small">${esc(r.d)}</div>`:""}<pre class="tpl">${esc(r.x)}</pre></div>`).join("")||emptyMsg("recruit")}
  ${addBtn("recruit","新增文案")}
  ${notesFor("models")}
  ${addBtn("notes","新增筆記",{page:"models"})}
+ ${blocksAt("models","end")}
 </div>`;
 
 V.page=id=>{const pg=D.pages.find(x=>x.id===id);
@@ -689,11 +704,14 @@ V.page=id=>{const pg=D.pages.find(x=>x.id===id);
   return `<div class="wrap view">${back()}
   <div class="sec-head"><div class="hrow"><div class="eyebrow">${esc(pg.en||"MY RESOURCES")}</div><span class="acts">${edBtn("pages",pg.id)}</span></div><h2>${esc(pg.t)}</h2>${pg.d?`<p>${esc(pg.d)}</p>`:""}</div>
   ${pg.intro?`<p class="pl" style="margin:0">${esc(pg.intro)}</p>`:""}
+  ${blocksAt("p_"+id,"top")}
   ${notesFor(key)||`<div class="empty">還沒有內容。${canEdit?"按「編輯」後用「＋ 新增內容」加入文字、圖片或連結。":""}</div>`}
   ${addBtn("notes","新增內容",{page:key})}
+  ${blocksAt("p_"+id,"end")}
  </div>`};
 V.forms=()=>`<div class="wrap view">${back()}
  ${head("CLIENT FORMS","接客實用表單","諮詢紀錄・告知同意書")}
+ ${blocksAt("forms","top")}
  ${(()=>{const t=SITE.fmTitle||SITE_DEF.fmTitle,i=SITE.fmIntro??"",h=SITE.fmHl??SITE_DEF.fmHl;return `<section class="refsec">
   <div class="hrow"><h2>${esc(t)}</h2><button class="btn ed" data-edit="sitefm">✎ 編輯標題與內容</button></div>
   ${i?`<p class="pl" style="margin:0">${esc(i)}</p>`:""}
@@ -703,14 +721,18 @@ V.forms=()=>`<div class="wrap view">${back()}
  ${D.forms.map(f=>`<div class="box"><div class="row"><h3>${esc(f.t)}</h3><div class="acts">${edBtn("forms",f.id)}</div></div>
    ${f.d?`<div class="small" style="white-space:pre-line">${esc(f.d)}</div>`:""}
    ${gallery(f.files,f.t)}
+   ${dlRow(f)}
    ${f.x?`<details class="theory"><summary class="sumrow"><span>純文字版｜自行排版</span>${copyBtn(f.x,"複製文字")}</summary><pre class="tpl" style="margin-top:10px">${esc(f.x)}</pre><div class="txtcopy">${copyBtn(f.x,"一鍵複製文字")}</div></details>`:""}</div>`).join("")||emptyMsg("forms")}
  ${addBtn("forms","新增表單")}
+ ${blocksAt("forms","end")}
 </div>`;
 
 V.biz=()=>{const n=notesFor("biz","list");return `<div class="wrap view">${back()}
  ${head("BUSINESS & SOCIAL","創業與社群經營","")}
+ ${blocksAt("biz","top")}
  ${n?`<div class="two">${n}</div>`:emptyMsg("notes")}
  ${addBtn("notes","新增筆記",{page:"biz"})}
+ ${blocksAt("biz","end")}
 </div>`};
 
 const inits={faq:initFaq,tools:initTools};
@@ -808,7 +830,7 @@ document.addEventListener("click",e=>{const r=e.target.closest("[data-repf]");if
 document.addEventListener("click",e=>{const b=e.target.closest("[data-rmf]");if(b&&ed){ed.files.splice(+b.dataset.rmf,1);drawFiles()}});
 function closeEditor(){$("#sheet").hidden=true;ed=null}
 /* keep 排序 numbers tidy: 1,2,3… within each group */
-const SCOPE={faq:"c",tools:"g",notes:"page",vendors:"where",blocks:"pos",bsubs:"b"};
+const SCOPE={faq:"c",tools:"g",notes:"page",vendors:"where",blocks:"page",bsubs:"b"};
 const ocmp=(a,b)=>(a.o??999)-(b.o??999)||(a.id<b.id?-1:a.id>b.id?1:0);
 const GRPF={tools:["g","其他"],spaces:["region","其他"],products:["cat",""]};
 async function renumber(col,item){
@@ -942,6 +964,7 @@ document.addEventListener("click",e=>{
   const q=e.target.closest("[data-q]");if(q){go("q",q.dataset.q);return}
   const g=e.target.closest("[data-go]");
   if(g){if(g.dataset.cat){faqCat=g.dataset.cat;faqQ=""}else if(g.dataset.go==="faq"&&g.closest("#drawer-nav")){faqCat="全部"}go(g.dataset.go);return}
+  const dl=e.target.closest("[data-dl]");if(dl){e.preventDefault();const o=dl.textContent;dl.textContent="準備中…";IMG_URL(dl.dataset.dl).then(u=>{if(!u){dl.textContent="下載失敗";return}const a=document.createElement("a");a.href=u;a.download=dl.dataset.name;a.rel="noopener";document.body.appendChild(a);a.click();setTimeout(()=>a.remove(),1000);dl.textContent=o}).catch(()=>{dl.textContent="下載失敗"});return}
   const sc=e.target.closest("[data-scroll]");if(sc){$("#"+sc.dataset.scroll).scrollIntoView({behavior:"smooth"});return}
   const b=e.target.closest("[data-copy]");if(!b)return;e.preventDefault();
   const t=b.dataset.copy,orig=b.textContent;
