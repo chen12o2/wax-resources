@@ -126,7 +126,8 @@ pre.tpl{white-space:pre-wrap;font-family:var(--body);font-size:14px;background:v
 .chkcount b{font-size:18px;color:var(--coffee)}
 .chkg{display:flex;align-items:center;gap:6px}
 .gno{font-weight:400}
-.refimg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.check{flex-wrap:wrap}
+.refimg{display:grid;grid-template-columns:1fr 1fr;gap:10px;flex:0 0 calc(100% - 26px);margin:2px 0 4px 26px;min-width:0}
 .ri{display:grid;gap:4px;text-decoration:none;color:inherit;cursor:zoom-in;min-width:0}
 .ri-box{display:block;border:1px solid var(--line);border-radius:8px;background:#fff;padding:6px}
 .ri img{display:block;width:100%;aspect-ratio:1/1;object-fit:contain}
@@ -480,6 +481,8 @@ const prodCard=x=>{const f=(x.files||[]).find(f=>!isPdf(f));const n=(x.files||[]
   ${URL(x.link)?`<a class="pbtn" href="${esc(URL(x.link))}" target="_blank" rel="noopener">🛒 ${esc(x.linkLabel||"查看商品")} ↗</a>`:""}
   <span class="acts">${edBtn("products",x.id)}</span></div></article>`};
 const refImgs=t=>{const fs=(t.files||[]).filter(f=>!isPdf(f));return fs.length?`<div class="refimg">${fs.map(f=>`<a class="ri" href="#" data-imgh="${esc(f.id)}" target="_blank" rel="noopener" data-lb="${esc(f.id)}" data-cap="${esc(t.name+(f.cap?"｜"+f.cap:""))}"><span class="ri-box"><img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" data-img="${esc(f.id)}" alt="${esc(t.name)}" loading="lazy"></span><small>${esc(f.cap||"款式參考")}・點圖放大</small></a>`).join("")}</div>`:""};
+const gsort=(gc,list)=>{const o=SITE.gord||{};return list.map((g,i)=>[g,i]).sort((a,b)=>((o[gc+"::"+a[0]]??999)-(o[gc+"::"+b[0]]??999))||a[1]-b[1]).map(x=>x[0])};
+const GL=gc=>gc==="tools"?gsort("tools",[...new Set(D.tools.map(t=>t.g||"其他"))]):gc==="products"?gsort("products",[...new Set(D.products.map(x=>x.cat||""))].filter(Boolean)):[];
 const HD={};
 const H=(key,en,t,p,cls="sec-head")=>{HD[key]=[t,p??""];const T=SITE["h_"+key+"_t"]||t,P=SITE["h_"+key+"_p"]??p;
   return `<div class="${cls}"><div class="hrow"><div class="eyebrow">${en}</div><button class="btn ed" data-edit="sitehd" data-id="${key}">✎ 編輯標題與說明</button></div><h2>${esc(T)}</h2>${P?`<p class="pl">${esc(P)}</p>`:""}</div>`};
@@ -604,7 +607,7 @@ V.vendors=()=>`<div class="wrap view">${back()}
 </div>`;
 
 V.tools=()=>{
-  const groups=[...new Set(D.tools.map(t=>t.g||"其他"))];
+  const groups=GL("tools");
   return `<div class="wrap view">${back()}
  ${head("EQUIPMENT","設備與工具清單","開工準備清單・商品連結・醫材廠商")}
  ${(()=>{const t=SITE.chkTitle||SITE_DEF.chkTitle,ii=SITE.chkIntro??SITE_DEF.chkIntro,bt=SITE.chkBtn??SITE_DEF.chkBtn,nt=SITE.chkNote??SITE_DEF.chkNote;
@@ -613,13 +616,13 @@ V.tools=()=>{
    ${bt?`<div><button class="cta" data-scroll="prods">${esc(bt)}</button></div>`:""}
    ${nt?`<p class="small" style="margin:0">${esc(nt)}</p>`:""}
    <div class="chkcount" id="tool-count"></div></section>`})()}
- ${groups.map((g,gi)=>`<div class="box"><div class="hrow"><h3 class="chkg"><span class="gno">${gi<20?String.fromCharCode(0x2460+gi):(gi+1)+"."}</span>${esc(g)}</h3><span class="acts"><button class="btn ed" data-edit="grp" data-id="${esc("tools::"+g)}">✎ 編輯分類</button>${addBtn("tools","新增項目",{g})}</span></div><div>${D.tools.filter(t=>(t.g||"其他")===g).map(t=>`<div class="check"><input type="checkbox" id="tk-${t.id}" data-k="${t.id}"><span><label for="tk-${t.id}">${esc(t.name)}</label>${t.note?`<small style="white-space:pre-line">${esc(t.note)}</small>`:""}${URL(t.link)?`<a class="pbtn" href="${esc(URL(t.link))}" target="_blank" rel="noopener">🛒 ${esc(t.linkLabel||"查看商品")} ↗</a>`:""}${refImgs(t)}</span><span class="acts">${edBtn("tools",t.id)}</span></div>`).join("")}</div></div>`).join("")||emptyMsg("tools")}
+ ${groups.map((g,gi)=>`<div class="box"><div class="hrow"><h3 class="chkg"><span class="gno">${gi<20?String.fromCharCode(0x2460+gi):(gi+1)+"."}</span>${esc(g)}</h3><span class="acts"><button class="btn ed" data-edit="grp" data-id="${esc("tools::"+g)}">✎ 編輯分類</button>${addBtn("tools","新增項目",{g})}</span></div><div>${D.tools.filter(t=>(t.g||"其他")===g).map(t=>`<div class="check"><input type="checkbox" id="tk-${t.id}" data-k="${t.id}"><span><label for="tk-${t.id}">${esc(t.name)}</label>${t.note?`<small style="white-space:pre-line">${esc(t.note)}</small>`:""}${URL(t.link)?`<a class="pbtn" href="${esc(URL(t.link))}" target="_blank" rel="noopener">🛒 ${esc(t.linkLabel||"查看商品")} ↗</a>`:""}</span><span class="acts">${edBtn("tools",t.id)}</span>${refImgs(t)}</div>`).join("")}</div></div>`).join("")||emptyMsg("tools")}
  ${addBtn("tools","新增項目")}
  <div class="row"><span></span><button class="btn" id="tool-reset">清除勾選</button></div>
  <section class="refsec" id="prods">
   <div class="sec-head" style="margin:0"><div class="row"><div class="eyebrow">PRODUCTS</div><button class="btn ed" data-edit="sitepr">✎ 編輯標題與說明</button></div><h2>${esc(SITE.prodTitle||"商品列表")}</h2>${(SITE.prodIntro??"實際使用過的商品與購買連結，點圖片可放大。")?`<p class="pl">${esc(SITE.prodIntro??"實際使用過的商品與購買連結，點圖片可放大。")}</p>`:""}</div>
   ${(()=>{if(!D.products.length)return loaded.products?`<div class="empty">還沒有商品。${canEdit?"按「編輯」後用「＋ 新增商品」加入。":""}</div>`:emptyMsg("products");
-    const cats=[...new Set(D.products.map(x=>x.cat||""))];const multi=cats.length>1||cats[0];
+    const cats=gsort("products",[...new Set(D.products.map(x=>x.cat||""))]);const multi=cats.length>1||cats[0];
     return cats.map(c=>`${multi?`<div class="hrow"><h3 class="pcat">${esc(c||"其他")}</h3><span class="acts">${c?`<button class="btn ed" data-edit="grp" data-id="${esc("products::"+c)}">✎ 編輯分類</button>`:""}${addBtn("products","新增商品",{cat:c})}</span></div>`:""}<div class="pgrid">${D.products.filter(x=>(x.cat||"")===c).map(prodCard).join("")}</div>`).join("")})()}
   ${addBtn("products","新增商品")}
  </section>
@@ -710,11 +713,11 @@ let ed=null;
 function openEditor(col,id,preset){
   if(col==="sitehd")SCHEMA.sitehd={name:"標題與說明",fields:[["h_"+id+"_t","標題"],["h_"+id+"_p","說明文字（清空就不顯示）","area"]]};
   if(col==="sitehs")SCHEMA.sitehs={name:"標題",fields:[["h_"+id+"_t","標題"]]};
-  if(col==="grp"){const gc=id.split("::")[0];SCHEMA.grp={name:gc==="spaces"?"地區":"分類",fields:[["gname",(gc==="spaces"?"地區":"分類")+"名稱（底下的項目會一起改）"]]}}
+  if(col==="grp"){const gc=id.split("::")[0];SCHEMA.grp={name:gc==="spaces"?"地區":"分類",fields:[["gname",(gc==="spaces"?"地區":"分類")+"名稱（底下的項目會一起改）"],...(gc==="tools"||gc==="products"?[["gpos","分類順序（填 1 就排第一個）","num"]]:[])]}}
   if(col==="sitecard")SCHEMA.sitecard={name:"卡片",fields:[["c_"+id+"_t","卡片標題"],["c_"+id+"_d","卡片說明"]]};
   if(col==="sitecards")SCHEMA.sitecards={name:"首頁卡片標題與說明",fields:RESB().flatMap((r,i)=>[["c_"+r.id+"_t",`卡片 ${String(i+1).padStart(2,"0")} 標題`],["c_"+r.id+"_d",`卡片 ${String(i+1).padStart(2,"0")} 說明`]])};
   const s=SCHEMA[col];
-  const old=col==="grp"?{gname:id.split("::").slice(1).join("::")}:/^site/.test(col)?{...SITE_DEF,...hdDefaults(),priceTitle:"品牌官方價目表",...SITE}:(id?D[col].find(d=>d.id===id):null)||{};
+  const old=col==="grp"?{gname:id.split("::").slice(1).join("::"),gpos:GL(id.split("::")[0]).indexOf(id.split("::").slice(1).join("::"))+1}:/^site/.test(col)?{...SITE_DEF,...hdDefaults(),priceTitle:"品牌官方價目表",...SITE}:(id?D[col].find(d=>d.id===id):null)||{};
   const vals={...(preset||{}),...old};
   if(!id&&!/^site/.test(col)){const max=Math.max(0,...D[col].map(d=>+d.o||0));vals.o=max+1;if(col==="faq"&&!vals.c)vals.c=CATS[0];if(col==="notes"&&!vals.page)vals.page=cur.v==="home"?"biz":cur.v}
   ed={col,id,old,files:((vals.files)||[]).map(f=>({...f})),uploading:0};
@@ -811,7 +814,9 @@ async function saveEditor(next){
     const nn=vals.gname;if(!nn){$("#sh-status").textContent="請填寫名稱。";return}
     const [gc,...rest]=ed.id.split("::"),gv=rest.join("::"),[gf,fb]=GRPF[gc];
     $("#sh-save").disabled=true;
-    try{for(const t of D[gc].filter(t=>(t[gf]||fb)===gv)){if(t[gf]!==nn)await DB.collection(gc).doc(t.id).update({[gf]:nn})}if(gc==="spaces"&&spReg===gv)spReg=nn;closeEditor()}
+    try{const order=GL(gc);for(const t of D[gc].filter(t=>(t[gf]||fb)===gv)){if(t[gf]!==nn)await DB.collection(gc).doc(t.id).update({[gf]:nn})}
+      if(gc==="tools"||gc==="products"){const rest=order.filter(x=>x!==gv&&x!==nn),pos=Math.min(Math.max(1,Math.round(vals.gpos)||1),rest.length+1);rest.splice(pos-1,0,nn);
+        const go={};for(const k in SITE.gord||{})if(!k.startsWith(gc+"::"))go[k]=SITE.gord[k];rest.forEach((x,i)=>go[gc+"::"+x]=i+1);await DB.doc("site/main").set({...SITE,gord:go})}if(gc==="spaces"&&spReg===gv)spReg=nn;closeEditor()}
     catch(e){$("#sh-save").disabled=false;$("#sh-status").textContent="儲存失敗，請檢查網路後再試一次。"}
     return}
   const req={pages:"t",products:"name",comms:"name",refs:"t",faq:"q",vendors:"n",prices:"brand",groups:"name",tools:"name",spaces:"name",recruit:"t",forms:"t",notes:"t"}[ed.col];
