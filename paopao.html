@@ -262,7 +262,12 @@ details.brand .inner{padding:0 18px 18px;display:grid;gap:10px}
 .kv dd{margin:0;user-select:all;min-width:0;overflow-wrap:anywhere}
 .lightbox{position:fixed;inset:0;z-index:70;background:rgba(25,18,12,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
   padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
-.lightbox img{max-width:100%;max-height:82vh;object-fit:contain;border-radius:8px;background:#fff}
+.lb-stage{flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:none}
+.lightbox img{max-width:100%;max-height:100%;object-fit:contain;border-radius:8px;background:#fff;transform-origin:center center;-webkit-user-drag:none;user-select:none;-webkit-user-select:none}
+.lb-bar{display:flex;align-items:center;gap:10px}
+.lb-bar #lb-out,.lb-bar #lb-in{width:40px;height:40px;padding:0;font-size:20px;line-height:1}
+#lb-zoom{color:#F6EEE3;font-size:13px;min-width:46px;text-align:center}
+.lb-tip{color:rgba(246,238,227,.7);font-size:12px}
 .lightbox .cap{color:#F6EEE3;font-size:14px;text-align:center}
 .lightbox button{background:#F6EEE3;color:#3F2F25;border:0;border-radius:999px;padding:8px 18px;cursor:pointer}
 .files-ed{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
@@ -285,7 +290,8 @@ footer b{font-family:var(--latin);letter-spacing:.24em;font-size:13px;display:bl
 .fchip button.frep{position:static;display:block;width:100%;height:auto;margin-top:6px;border:1px dashed var(--khaki);background:var(--paper);color:var(--coffee);border-radius:8px;padding:8px 10px;font-size:14px;line-height:1.3;white-space:nowrap;writing-mode:horizontal-tb}
 .fchip button.frep:hover{background:var(--tea)}
 a.thumb{text-decoration:none;color:inherit}
-.thumb img,.lightbox img{-webkit-touch-callout:default;-webkit-user-select:auto;user-select:auto}
+.thumb img{-webkit-touch-callout:default;-webkit-user-select:auto;user-select:auto}
+.lightbox img{-webkit-touch-callout:default}
 .fno{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:6px;padding:6px 8px;border-radius:6px;background:var(--tea);color:var(--coffee);font-size:13px;font-weight:500;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
 .fno .grip{font-size:15px;line-height:1;opacity:.75}
 .fchip.lift{opacity:.85;box-shadow:0 8px 24px rgba(60,40,25,.25);outline:2px solid var(--khaki);position:relative;z-index:2}
@@ -381,7 +387,7 @@ setTimeout(function(){show("載入太久了，可能是網路不穩。"+(window.
 
 <div class="bar"><div class="wrap">
   <button class="icon-btn" id="menu-btn" aria-label="開啟選單">☰</button>
-  <div class="brand"><b id="brand">WAX STUDIO</b><small>MY RESOURCES</small></div>
+  <div class="brand"><b id="brand">WAX STUDIO</b><small id="brandsub">MY RESOURCES</small></div>
   <button class="edit-toggle" id="edit-toggle" hidden>編輯</button>
   <button class="home-link" data-go="home">首頁</button>
 </div>
@@ -409,7 +415,7 @@ setTimeout(function(){show("載入太久了，可能是網路不穩。"+(window.
     <div class="foot"><span class="spacer"></span><button type="button" class="btn" id="ss-cancel">取消</button><button type="button" class="cta" id="ss-save">儲存</button></div>
   </div>
 </div>
-<div class="lightbox" id="lightbox" hidden><img id="lb-img" alt=""><div class="cap" id="lb-cap"></div><button type="button" id="lb-close">關閉</button></div>
+<div class="lightbox" id="lightbox" hidden><div class="lb-stage" id="lb-stage"><img id="lb-img" alt="" draggable="false"></div><div class="cap" id="lb-cap"></div><div class="lb-bar"><button type="button" id="lb-out" aria-label="縮小">－</button><span id="lb-zoom">100%</span><button type="button" id="lb-in" aria-label="放大">＋</button><button type="button" id="lb-close">關閉</button></div><div class="lb-tip">雙指可放大縮小・點兩下放大</div></div>
 <div class="sheet" id="sheet" hidden>
   <div class="sheet-card" role="dialog" aria-modal="true" aria-labelledby="sh-title">
     <div class="row"><h3 id="sh-title">編輯</h3><button class="icon-btn" id="sh-x" aria-label="關閉">×</button></div>
@@ -431,7 +437,7 @@ let SUBS={"術後回家":["術後保養","皮膚反應","內生毛與去角質",
 const NOTE_PAGES=[["vendors","品牌與廠商採購"],["spaces","共享工作室"],["models","模特兒招募"],["biz","創業與社群經營"]];
 const O=["o","排序（數字小的排前面）","num"];
 const SCHEMA={
- site:{name:"首頁文字",fields:[["brand","品牌名稱（英文）"],["title","首頁大標（按 Enter 換行）","area"],["lead","首頁介紹","area"],["quoteTitle","結語標題"],["quoteBody","結語內容","area"],["notice","使用說明","area"]]},
+ site:{name:"首頁文字",fields:[["brand","左上角品牌名稱（例：WAX STUDIO）"],["brandSub","品牌名稱下方小字（例：MY RESOURCES）"],["title","首頁大標（按 Enter 換行）","area"],["lead","首頁介紹","area"],["quoteTitle","結語標題"],["quoteBody","結語內容","area"],["notice","使用說明","area"]]},
  faq:{name:"問題",fields:[["c","分類","select",CATS],["sub","小分類","select",()=>[["","（不分小分類）"],...(SUBS["術後回家"]||[])]],["q","問題"],["a","給客人的白話回答","area"],["w","專業學理重點","area"],O]},
  vendors:{name:"廠商",fields:[["where","放在哪一頁","select",[["vendors","品牌與廠商採購"],["tools","設備與工具清單｜耗材團購與醫材廠商"]]],["n","廠商名稱"],["t","簡介（例：老師平常叫貨的醫材廠商）","area"],["hl","重點提醒框（選填）","area"],["items","品項與折扣（一行一項，品項｜折扣）","area"],["note","叫貨備註（可換行，例：可少量叫貨、無最低叫貨量限制）","area"],["ship","運費（一行一條，例：7-11店到店運費60）","area"],["person","聯絡人"],["phone","電話"],["line","LINE ID"],["contact","其他聯絡方式（選填）"],["link","LINE 或官網連結（選填）"],["files","報價單圖片（選填）","files"],O]},
  sitep:{name:"價目表區標題與說明",fields:[["priceTitle","標題"],["priceIntro","開頭說明","area"],["priceHl","重點提醒框（選填）","area"],["priceFoot","最下方小字（選填）","area"]]},
@@ -536,6 +542,11 @@ async function makePdf(btn){const f=D.forms.find(x=>x.id===btn.dataset.pdf);if(!
   catch(err){btn.textContent="下載失敗，請再試一次";setTimeout(()=>btn.textContent=o,2500)}
   btn.disabled=false}
 const HCATS=()=>[...new Set(RES().map(r=>r.cat).filter(Boolean))];
+const LBZ={s:1,x:0,y:0};
+function lbApply(){const im=$("#lb-img");if(!im)return;im.style.transform=`translate(${LBZ.x}px,${LBZ.y}px) scale(${LBZ.s})`;const z=$("#lb-zoom");if(z)z.textContent=Math.round(LBZ.s*100)+"%"}
+function lbReset(){LBZ.s=1;LBZ.x=0;LBZ.y=0;lbApply()}
+function lbClamp(){if(LBZ.s<=1.001){LBZ.s=1;LBZ.x=0;LBZ.y=0;return}const r=$("#lb-stage").getBoundingClientRect(),im=$("#lb-img");const mx=Math.max(0,(im.offsetWidth*LBZ.s-r.width)/2),my=Math.max(0,(im.offsetHeight*LBZ.s-r.height)/2);LBZ.x=Math.min(mx,Math.max(-mx,LBZ.x));LBZ.y=Math.min(my,Math.max(-my,LBZ.y))}
+function lbZoomAt(ns,cx,cy,base){const b=base||LBZ;ns=Math.min(6,Math.max(1,ns));const r=$("#lb-stage").getBoundingClientRect();const ox=cx-(r.left+r.width/2),oy=cy-(r.top+r.height/2);LBZ.x=ox-(ox-b.x)*ns/b.s;LBZ.y=oy-(oy-b.y)*ns/b.s;LBZ.s=ns;lbClamp();lbApply()}
 const NUMC=i=>i<20?String.fromCharCode(0x2460+i):(i+1)+".";
 const BPAGES=()=>[["home","資源庫首頁"],...RES().map(r=>[r.id,r.t])];
 const blocksAt=(page,pos)=>D.blocks.filter(b=>(b.page||"tools")===page&&((b.pos||"mid")===pos||(page!=="tools"&&pos==="end"&&(b.pos||"mid")==="mid"))).map(b=>{const subs=D.bsubs.filter(x=>x.b===b.id);
@@ -785,7 +796,7 @@ function render(){
   $("#app").innerHTML=cur.v==="q"?V.q(cur.id):/^p_/.test(cur.v)?V.page(cur.v.slice(2)):V[cur.v]();
   inits[cur.v]&&inits[cur.v]();
   window.scrollTo(0,y);
-  const brand=SITE.brand||"WAX STUDIO";$("#brand").textContent=brand;$("#brand2").textContent=brand;
+  const brand=SITE.brand||"WAX STUDIO";$("#brand").textContent=brand;$("#brandsub").textContent=SITE.brandSub||"MY RESOURCES";$("#brand2").textContent=brand;
   $("#drawer-nav").innerHTML=`<button data-go="home"><span>資源庫首頁</span><span>↗</span></button>`+(isAdmin?`<button data-go="members"><span>會員管理</span><span>${MEMBERS.filter(m=>m.status==="pending").length?`<span class="badge">${MEMBERS.filter(m=>m.status==="pending").length}</span>`:"管理者"}</span></button>`:"")+
    RES().map(r=>`<button data-go="${r.id}"><span>${esc(r.t)}</span><span>${esc(r.nav)}</span></button>`+
    (r.id==="faq"?CATS.map(c=>`<button class="sub-item" data-go="faq" data-cat="${c}"><span>${c}</span><span>${D.faq.filter(f=>f.c===c).length}</span></button>`).join(""):"")).join("");
@@ -999,8 +1010,9 @@ document.addEventListener("click",e=>{
     return}
   const ebtn=e.target.closest("[data-edit]");
   if(ebtn){openEditor(ebtn.dataset.edit,ebtn.dataset.id,ebtn.dataset.preset?JSON.parse(ebtn.dataset.preset):null);return}
-  const lb=e.target.closest("[data-lb]");if(lb){e.preventDefault();$("#lb-img").src="data:image/gif;base64,R0lGODlhAQABAAAAACw=";loadImg(lb.dataset.lb).then(u=>{if(u)$("#lb-img").src=u});$("#lb-cap").textContent=lb.dataset.cap||"";$("#lightbox").hidden=false;return}
+  const lb=e.target.closest("[data-lb]");if(lb){e.preventDefault();$("#lb-img").src="data:image/gif;base64,R0lGODlhAQABAAAAACw=";loadImg(lb.dataset.lb).then(u=>{if(u)$("#lb-img").src=u});$("#lb-cap").textContent=lb.dataset.cap||"";$("#lightbox").hidden=false;lbReset();return}
   if(e.target.id==="lightbox"||e.target.id==="lb-close"){$("#lightbox").hidden=true;return}
+  if(e.target.id==="lb-in"||e.target.id==="lb-out"){const r=$("#lb-stage").getBoundingClientRect();lbZoomAt(LBZ.s*(e.target.id==="lb-in"?1.5:1/1.5),r.left+r.width/2,r.top+r.height/2);return}
   if(e.target.closest("[data-subs]")){openSubs();return}
   const spr=e.target.closest("[data-spr]");if(spr){spReg=spr.dataset.spr;render();return}
   const cg=e.target.closest("[data-cgo]");if(cg){faqCat=cg.dataset.cgo;faqQ="";go("faq");return}
@@ -1021,6 +1033,20 @@ document.addEventListener("touchmove",e=>{if(e.touches&&e.touches.length>1)e.pre
 $("#menu-btn").addEventListener("click",()=>document.body.classList.add("open"));
 $("#close-btn").addEventListener("click",()=>document.body.classList.remove("open"));
 $("#scrim").addEventListener("click",()=>document.body.classList.remove("open"));
+;(()=>{const st=$("#lb-stage");if(!st)return;let t0=null,lastTap=0,mouse=null;const dist=(a,b)=>Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
+  st.addEventListener("touchstart",e=>{if(e.touches.length===2){const[a,b]=e.touches;t0={m:"pinch",d:dist(a,b),cx:(a.clientX+b.clientX)/2,cy:(a.clientY+b.clientY)/2,s:LBZ.s,x:LBZ.x,y:LBZ.y};e.preventDefault()}
+    else if(e.touches.length===1){const a=e.touches[0],now=Date.now();if(now-lastTap<300){e.preventDefault();lbZoomAt(LBZ.s>1.05?1:2.5,a.clientX,a.clientY);lastTap=0;t0=null;return}lastTap=now;t0={m:"pan",px:a.clientX,py:a.clientY,x:LBZ.x,y:LBZ.y}}},{passive:false});
+  st.addEventListener("touchmove",e=>{if(!t0)return;e.preventDefault();
+    if(t0.m==="pinch"&&e.touches.length===2){const[a,b]=e.touches;const cx=(a.clientX+b.clientX)/2,cy=(a.clientY+b.clientY)/2;lbZoomAt(t0.s*dist(a,b)/t0.d,t0.cx,t0.cy,t0);LBZ.x+=cx-t0.cx;LBZ.y+=cy-t0.cy;lbClamp();lbApply()}
+    else if(t0.m==="pan"&&e.touches.length===1&&LBZ.s>1){const a=e.touches[0];LBZ.x=t0.x+a.clientX-t0.px;LBZ.y=t0.y+a.clientY-t0.py;lbClamp();lbApply()}},{passive:false});
+  st.addEventListener("touchend",e=>{if(e.touches.length===1){const a=e.touches[0];t0={m:"pan",px:a.clientX,py:a.clientY,x:LBZ.x,y:LBZ.y}}else if(!e.touches.length)t0=null});
+  ["gesturestart","gesturechange"].forEach(ev=>st.addEventListener(ev,e=>e.preventDefault()));
+  st.addEventListener("wheel",e=>{e.preventDefault();lbZoomAt(LBZ.s*(e.deltaY<0?1.15:1/1.15),e.clientX,e.clientY)},{passive:false});
+  st.addEventListener("dblclick",e=>{lbZoomAt(LBZ.s>1.05?1:2.5,e.clientX,e.clientY)});
+  st.addEventListener("mousedown",e=>{if(LBZ.s<=1)return;e.preventDefault();mouse={px:e.clientX,py:e.clientY,x:LBZ.x,y:LBZ.y}});
+  window.addEventListener("mousemove",e=>{if(!mouse)return;LBZ.x=mouse.x+e.clientX-mouse.px;LBZ.y=mouse.y+e.clientY-mouse.py;lbClamp();lbApply()});
+  window.addEventListener("mouseup",()=>{mouse=null});
+  st.addEventListener("click",e=>{if(e.target===st&&LBZ.s<=1)$("#lightbox").hidden=true});})();
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(!$("#subsheet").hidden)closeSubs();$("#lightbox").hidden=true;document.body.classList.remove("open");if(!$("#sheet").hidden)closeEditor()}});
 
 
@@ -1184,7 +1210,43 @@ V.members=()=>{
   ${sec("pending","待審核")}${sec("approved","已通過")}${sec("rejected","未通過")}${sec("disabled","已停用")}
   <div class="refsec"><h3>資料匯入</h3><p class="small" style="margin:0">搬家用：選擇 Claude 提供的匯入檔（.json），會把內容和圖片寫進這個網站。重複匯入會覆蓋同名項目。</p>
    <input type="file" id="imp-file" accept="application/json,.json"></div>
+  <div class="refsec"><h3>備份與複製</h3>
+   <p class="small" style="margin:0">「下載備份」會把這個網站目前的所有內容和圖片存成一個檔案，之後可以用上面的「資料匯入」還原。</p>
+   <div><button class="btn" id="bk-btn">⬇ 下載這個網站的備份</button></div>
+   ${SITES.filter(x=>x[0]!==SITE_ID).map(x=>`<p class="small" style="margin:8px 0 0">把「${esc(x[1])}」的全部內容和圖片複製到這個網站（${esc(SITE_NAME)}）。會員名單不會複製。</p>
+   <label class="small" style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="cp-wipe" checked style="margin-top:4px">先清空這個網站原本的內容，複製完會跟「${esc(x[1])}」一模一樣（不勾選的話，這邊多出來的內容會保留）</label>
+   <div><button class="cta" data-copyfrom="${x[0]}" data-copyname="${esc(x[1])}">從「${esc(x[1])}」複製全部內容</button></div>`).join("")}
+  </div>
  </div>`};
+const SITES=[["tonghang","熱蠟工作室-同行"],["paopao","熱蠟工作室-泡泡🫧"]];
+const DATA_COLS=()=>[...new Set([...COLS,"site","config"])];
+const toast=t=>{let st=$("#imp-toast");if(!st){st=document.createElement("div");st.id="imp-toast";document.body.appendChild(st)}st.hidden=false;st.textContent=t;return st};
+async function readSite(site){const Q=c=>fs.collection("sites/"+site+"/"+c);const docs=[];
+  for(const c of DATA_COLS()){const q=await Q(c).get();q.forEach(d=>docs.push({path:c+"/"+d.id,data:d.data()}))}
+  const iq=await Q("images").get();const imgs=[];iq.forEach(d=>imgs.push({id:d.id,data:d.data()}));return {docs,imgs}}
+document.addEventListener("click",async e=>{
+  if(!isAdmin)return;
+  if(e.target.id==="bk-btn"){const b=e.target;b.disabled=true;const st=toast("備份中，正在讀取內容…");
+    try{const {docs,imgs}=await readSite(SITE_ID);const byId={};imgs.forEach(x=>byId[x.id]=x.data);
+      const images=imgs.filter(x=>!/_p[0-9]+$/.test(x.id)).map(x=>{let d=x.data.data||"";for(let i=1;i<(x.data.parts||1);i++)d+=(byId[x.id+"_p"+i]||{}).data||"";return {id:x.id,data:d,type:x.data.type||"image/jpeg",name:x.data.name||""}});
+      const J={site:SITE_ID,siteName:SITE_NAME,exportedAt:new Date().toISOString(),docs:docs.map(d=>({path:d.path,data:JSON.parse(JSON.stringify(d.data))})),images};
+      const day=new Date().toISOString().slice(0,10);saveBlob(new Blob([JSON.stringify(J)],{type:"application/json"}),`備份-${SITE_NAME.replace(/[^一-龥A-Za-z0-9-]/g,"")}-${day}.json`);
+      st.textContent=`備份完成：${docs.length} 筆內容、${images.length} 張圖片。`;setTimeout(()=>st.hidden=true,6000)}
+    catch(err){st.textContent="備份失敗："+(err.code||err.message||err)}b.disabled=false;return}
+  const cb=e.target.closest("[data-copyfrom]");if(!cb)return;
+  if(!cb.classList.contains("armed")){cb.classList.add("armed");const t=cb.textContent;cb.textContent="確定要複製嗎？再按一次開始";setTimeout(()=>{cb.classList.remove("armed");cb.textContent=t},4000);return}
+  const src=cb.dataset.copyfrom,wipe=!!($("#cp-wipe")&&$("#cp-wipe").checked);cb.disabled=true;const st=toast("讀取「"+cb.dataset.copyname+"」的內容…");
+  try{const {docs,imgs}=await readSite(src);
+    if(wipe){st.textContent="清空這個網站原本的內容…";const cur=await readSite(SITE_ID);const keep=new Set([...docs.map(d=>d.path),...imgs.map(x=>"images/"+x.id)]);
+      const del=[...cur.docs.map(d=>d.path),...cur.imgs.map(x=>"images/"+x.id)].filter(p=>!keep.has(p));
+      for(let i=0;i<del.length;i+=400){const bt=fs.batch();del.slice(i,i+400).forEach(p=>bt.delete(fs.doc(P(p))));await bt.commit()}}
+    let n=0;const tot=docs.length+imgs.length;
+    for(let i=0;i<docs.length;i+=400){const bt=fs.batch();docs.slice(i,i+400).forEach(d=>bt.set(fs.doc(P(d.path)),d.data));await bt.commit();n+=Math.min(400,docs.length-i);st.textContent=`複製中… ${n}/${tot}`}
+    for(const x of imgs){await fs.doc(P("images/"+x.id)).set(x.data);n++;st.textContent=`複製中… ${n}/${tot}`}
+    IMGC.clear();st.textContent=`複製完成：${docs.length} 筆內容、${imgs.filter(x=>!/_p[0-9]+$/.test(x.id)).length} 張圖片。`;setTimeout(()=>st.hidden=true,8000)}
+  catch(err){st.textContent="複製失敗："+(err.code||err.message||err)+"（可以再按一次繼續）"}
+  cb.disabled=false;cb.classList.remove("armed");cb.textContent="從「"+cb.dataset.copyname+"」複製全部內容";
+});
 document.addEventListener("click",async e=>{
   const b=e.target.closest("[data-mact]");if(!b||!isAdmin)return;
   const id=b.dataset.id,a=b.dataset.mact,ref=fs.doc(P("members/"+id));
